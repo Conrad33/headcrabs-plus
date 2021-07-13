@@ -1,6 +1,11 @@
 include("hcp/convars.lua")
 include("hcp/enhancements/modifiers.lua")
 
+killicon.Add("npc_headcrab", "hud/killicons/npc_headcrab", Color(255, 80, 0, 255))
+killicon.Add("npc_headcrab_fast", "hud/killicons/npc_headcrab_fast", Color(255, 80, 0, 255))
+killicon.Add("npc_headcrab_black", "hud/killicons/npc_headcrab_black", Color(255, 80, 0, 255))
+killicon.Add("npc_headcrab_poison", "hud/killicons/npc_headcrab_black", Color(255, 80, 0, 255))
+
 local function HCP_AddOption(panel, convar, name)
 	if convar[3] == "bool" then
 		local box = panel:CheckBox(name or "#hcp.cv." .. convar[1], "hcp_" .. convar[1])
