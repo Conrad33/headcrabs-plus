@@ -3,7 +3,8 @@ ENT.Type = "anim"
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 0, "ShouldScale")
-	self:NetworkVar("Vector", 0, "PlayerColor")
+	self:NetworkVar("Bool", 1, "PlayerColorEnabled")
+	self:NetworkVar("Vector", 0, "MockPlayerColor")
 end
 
 function ENT:Initialize()
@@ -17,6 +18,11 @@ function ENT:Initialize()
 	end
 
 	self:AddCallback("BuildBonePositions", self.BuildBonePositions)
+end
+
+function ENT:GetPlayerColor()
+	if not self:GetPlayerColorEnabled() then return end
+	return self:GetMockPlayerColor()
 end
 
 function ENT:Draw()

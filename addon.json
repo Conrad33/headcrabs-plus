@@ -1,0 +1,16 @@
+{
+    "title": "Headcrabs Plus V4",
+    "description": "",
+    "type": "npc",
+    "tags": [
+        "roleplay",
+        "realism"
+    ],
+    "ignore": [
+        ".git/*",
+        "README.md",
+        "*.ai",
+        "*.png",
+        "*.jpg"
+    ]
+}

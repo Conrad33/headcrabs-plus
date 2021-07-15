@@ -131,7 +131,7 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 
 	if not nobonemerge then
 		local bonemerge = HCP.CreateBonemerge(target, model or entity:GetModel(), skin or entity:GetSkin())
-		if entity.GetPlayerColor then bonemerge:SetPlayerColor(entity:GetPlayerColor()) end
+		if entity.GetPlayerColor and not entity.HCP_TTT then bonemerge:SetPlayerColorEnabled(true) bonemerge:SetMockPlayerColor(entity:GetPlayerColor()) end
 		for k, v in pairs(entity:GetBodyGroups()) do
 			bonemerge:SetBodygroup(v.id, entity:GetBodygroup(v.id))
 		end
@@ -144,10 +144,15 @@ end
 
 -- Copies a Bonemerge from one entity to another (returns Entity)
 function HCP.CopyBonemerge(bonemerge, target)
+	bonemerge = IsValid(bonemerge.HCP_Bonemerge) and bonemerge.HCP_Bonemerge or bonemerge
+
 	local newmerge = HCP.CreateBonemerge(target, bonemerge:GetModel(), bonemerge:GetSkin())
 	for k, v in pairs(bonemerge:GetBodyGroups()) do
 		newmerge:SetBodygroup(v.id, bonemerge:GetBodygroup(v.id))
 	end
+	newmerge:SetMockPlayerColor(bonemerge:GetMockPlayerColor())
+	newmerge:SetPlayerColorEnabled(bonemerge:GetPlayerColorEnabled())
+
 	return newmerge
 end
 
@@ -174,8 +179,27 @@ function HCP.CreateDeathRagdoll(entity)
 	deathragdoll:SetPos(entity:GetPos())
 	deathragdoll:SetAngles(entity:GetAngles())
 	deathragdoll:Spawn()
-	deathragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-	deathragdoll:Fire("FadeAndRemove", "", 120)
+	if not entity.HCP_TTT and not GetConVar("ai_serverragdolls"):GetBool() then
+		deathragdoll:Fire("FadeAndRemove", "", 60)
+		deathragdoll:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+	end
+
+	-- Set the Ragdoll data for TTT
+	if entity.HCP_TTT then
+		CORPSE.SetPlayerNick(deathragdoll, IsValid(entity.HCP_TTT.ply) and entity.HCP_TTT.ply or entity.HCP_TTT.nick)
+		CORPSE.SetFound(deathragdoll, false)
+		CORPSE.SetCredits(deathragdoll, entity.HCP_TTT.credits)
+		deathragdoll.sid = entity.HCP_TTT.sid
+		deathragdoll.uqid = entity.HCP_TTT.uqid
+		deathragdoll.equipment = entity.HCP_TTT.equipment
+		deathragdoll.was_role = entity.HCP_TTT.was_role
+		deathragdoll.bomb_wire = entity.HCP_TTT.bomb_wire
+		deathragdoll.dmgtype = entity.HCP_TTT.dmgtype
+		deathragdoll.time = entity.HCP_TTT.time
+		deathragdoll.kills = entity.HCP_TTT.kills
+		deathragdoll.player_ragdoll = true
+		deathragdoll:SetCollisionGroup(entity.HCP_TTT.collision or COLLISION_GROUP_DEBRIS_TRIGGER)
+	end
 
 	HCP.CopyBonemerge(entity.HCP_Bonemerge, deathragdoll)
 
@@ -233,7 +257,7 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 	local zclass = HCP.GetZombieClass(attacker:GetClass(), cosmetic or entity)
 	if not zclass then return end
 
-	local zombie = HCP.CreateZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge"))
+	local zombie = HCP.CreateZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge") and not entity.HCP_TTT)
 
 	if HCP.GetConvarBool("remove_attacker") and not HCP.Zombies[attacker:GetClass()] then
 		attacker:Remove()
@@ -258,7 +282,7 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 		entity:SetModel("models/props_junk/watermelon01_chunk02c.mdl")
 		SafeRemoveEntityDelayed(entity, 0.2)
 	elseif entity:IsPlayer() then
-		entity.HCP_RemoveRagdoll = true
+		entity.HCP_RemoveRagdoll = zombie
 	end
 
 	return zombie
@@ -333,7 +357,7 @@ hook.Add("OnNPCKilled", "HCP_NPCDeath", function(npc, inflictor, attacker)
 			return
 		end
 
-		if HCP.GetConvarBool("enable_bonemerge_ragdolls") then
+		if HCP.GetConvarBool("enable_bonemerge_ragdolls") or npc.HCP_TTT then
 			HCP.CreateDeathRagdoll(npc)
 		end
 		return
@@ -344,7 +368,7 @@ hook.Add("OnNPCKilled", "HCP_NPCDeath", function(npc, inflictor, attacker)
 end)
 
 hook.Add("DoPlayerDeath", "HCP_PlayerDeath", function(ply, attacker, dmg)
-	if pk_pills and pk_pills.getMappedEnt(ply) then
+	if pk_pills and IsValid(pk_pills.getMappedEnt(ply)) then
 		local pill = pk_pills.getMappedEnt(ply)
 		ply:SetCollisionGroup(COLLISION_GROUP_DEBRIS) -- Zombie will be invisible if it spawns in the player's collision, should reset on spawn
 		HCP.HandleTakeover(attacker, ply, pill:GetPuppet())
@@ -365,6 +389,27 @@ hook.Add("PostPlayerDeath", "HCP_RemoveRagdoll", function(ply)
 	if IsValid(ply:GetRagdollEntity()) then
 		ply:GetRagdollEntity():Remove()
 	end
+end)
+
+-- TTT Support
+hook.Add("TTTOnCorpseCreated", "HCP_TTTCorpse", function(rag, ply)
+	if not IsValid(ply) or not IsValid(ply.HCP_RemoveRagdoll) or not IsValid(rag) then return end
+	local zombie = ply.HCP_RemoveRagdoll
+
+	zombie.HCP_TTT = {}
+	zombie.HCP_TTT.nick = CORPSE.GetPlayerNick(rag)
+	zombie.HCP_TTT.ply = CORPSE.GetPlayer(rag)
+	zombie.HCP_TTT.credits = CORPSE.GetCredits(rag)
+	zombie.HCP_TTT.sid = rag.sid
+	zombie.HCP_TTT.uqid = rag.uqid
+	zombie.HCP_TTT.equipment = rag.equipment
+	zombie.HCP_TTT.was_role = rag.was_role
+	zombie.HCP_TTT.bomb_wire = rag.bomb_wire
+	zombie.HCP_TTT.time = rag.time
+	zombie.HCP_TTT.kills = rag.kills
+	zombie.HCP_TTT.collision = rag:GetCollisionGroup()
+
+	SafeRemoveEntityDelayed(rag, 0.1)
 end)
 
 -- Instant Kill Chance
@@ -465,6 +510,8 @@ concommand.Add("hcp_diagnostic", function(ply)
 		str = str .. "\n" .. k .. ": " .. info.source .. "\n" .. (ReadHookFile(info) or "unable to read") .. "\n"
 	end
 
+	diagnostic = "A diagnostic report is already running"
+
 	HTTP({
 		url = "https://hastebin.com/documents",
 		method = "POST",
@@ -473,6 +520,7 @@ concommand.Add("hcp_diagnostic", function(ply)
 		success = function(c, body, h)
 			local data = util.JSONToTable(body)
 			if not data or not data.key then
+				diagnostic = nil
 				report("Diagnostic failed to post: " .. c)
 				return
 			end

@@ -51,10 +51,10 @@ HCP.CreateConvar("instantkill", "instantkill_chance", 0, "range", {1, 100})
 -- Scripted Sequences Convars
 HCP.CreateConvar("scripted", "takeover_animation", 0, "bool")
 HCP.CreateConvar("scripted", "enable_burrowing", 0, "bool")
-HCP.CreateConvar("scripted", "burrowing_range", 0, "range", {1, 500})
+HCP.CreateConvar("scripted", "burrowing_range", 50, "range", {1, 500})
 HCP.CreateConvar("scripted", "enable_sleeping", 0, "bool")
-HCP.CreateConvar("scripted", "sleeping_range", 0, "range", {1, 500})
-HCP.CreateConvar("scripted", "sleeping_time", 0, "range", {1, 500})
+HCP.CreateConvar("scripted", "sleeping_range", 50, "range", {1, 500})
+HCP.CreateConvar("scripted", "sleeping_time", 10, "range", {1, 500})
 
 -- Poison Headcrab Convars
 HCP.CreateConvar("poison", "poison_bites", 3, "range", {0, 5})
