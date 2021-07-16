@@ -4,7 +4,7 @@ HCP.Modifiers = {
 	["npc_headcrab_fast"] = {5, 10},
 	["npc_headcrab_black"] = {false, 35},
 	["npc_headcrab_poison"] = "npc_headcrab_black",
-	["npc_zombie"] = {10, 70},
+	["npc_zombie"] = {10, 50},
 	["npc_poisonzombie"] = {10, 175},
 	["npc_fastzombie"] = {5, 50},
 	["npc_zombine"] = {10, 100},
@@ -30,7 +30,7 @@ function HCP.GetModifiedHealth(entity)
 	if not mdtbl or not mdtbl[2] then return false end
 
 	if HCP.GetConvarBool("modifiers_override") then return HCP.GetConvarInt("health_" .. (copy_class or entity:GetClass()):sub(#"npc_" + 1)) end
-	return HCP.GetConvarInt("health_" .. (copy_class or entity:GetClass()):sub(#"npc_" + 1)) - mdtbl[2]
+	return entity:Health() + HCP.GetConvarInt("health_" .. (copy_class or entity:GetClass()):sub(#"npc_" + 1)) - mdtbl[2]
 end
 
 -- Calculates the modified damage value (returns Integer)

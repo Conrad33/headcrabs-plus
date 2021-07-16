@@ -182,6 +182,8 @@ function HCP.CreateDeathRagdoll(entity)
 	if not entity.HCP_TTT and not GetConVar("ai_serverragdolls"):GetBool() then
 		deathragdoll:Fire("FadeAndRemove", "", 60)
 		deathragdoll:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+	else
+		undo.ReplaceEntity(entity, deathragdoll)
 	end
 
 	-- Set the Ragdoll data for TTT
@@ -419,7 +421,7 @@ hook.Add("EntityTakeDamage", "HCP_InstantKill", function(ent, dmg)
 
 	if HCP.GetConvarBool("instantkill_enable") and math.Rand(0, 100) < HCP.GetConvarInt("instantkill_chance") then
 		dmg:SetDamage(999)
-		attacker.HCP_DMGLock = CurTime()
+		attacker.HCP_DMGLock = CurTime() + 0.1
 	end
 
 	if HCP.GetConvarBool("instantkill_behind") then
@@ -448,11 +450,11 @@ hook.Add("InitPostEntity", "HCP_CompatHooks", function()
 	-- Stop Blood and Gore Overhaul 3 from gibbing zombies
 	if hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"] then
 		local oldbgo = hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"]
-		hook.Add("OnNPCKilled", "OnNPCKilled", function(npc, attacker, inflictor)
+		hook.Add("OnNPCKilled", "BGORagdollsConvertNPC", function(npc, attacker, inflictor)
 			if npc.IsHeadcrabPlus and IsValid(npc.HCP_boneMerge) then return end
 			return oldbgo(npc, attacker, inflictor)
 		end)
-	end
+	end	
 end)
 
 -- Diagnostics for bug reports
@@ -462,6 +464,7 @@ local Hooks = {
 	"EntityTakeDamage",
 	"DoPlayerDeath",
 	"OnNPCKilled",
+	"PlayerDeath",
 }
 local functions = {}
 local function ReadHookFile(info)

@@ -35,18 +35,24 @@ function ENT:OnRemove()
 	end
 end
 
-function ENT:BuildBonePositions(boneCount)
-	if not self:GetShouldScale() or not IsValid(self:GetParent()) then return end
-
-	local boneId = self:LookupBone("ValveBiped.Bip01_Head1")
+function ENT:Resize(bone, vec, ang)
+	local boneId = self:LookupBone(bone)
 	local matrix = self:GetBoneMatrix(boneId or -1)
 	if not boneId or not matrix then return end
 
-	if self:GetParent():GetClass() == "npc_poisonzombie" then
-		matrix:Scale(Vector(0.8, 0.8, 0.8))
-		matrix:Rotate(Angle(-90, 130, 0))
-	else
-		matrix:Scale(Vector(.01, .01, .01))
-	end
+	matrix:Scale(vec or Vector(.01, .01, .01))
+	matrix:Rotate(ang or Angle(0, 0, 0))
+
 	self:SetBoneMatrix(boneId, matrix)
+end
+
+function ENT:BuildBonePositions(boneCount)
+	if not self:GetShouldScale() or not IsValid(self:GetParent()) then return end
+
+
+	if self:GetParent():GetClass() == "npc_poisonzombie" then
+		self:Resize("ValveBiped.Bip01_Head1", Vector(0.8, 0.8, 0.8), Angle(-90, 130, 0))
+	else
+		self:Resize("ValveBiped.Bip01_Head1")
+	end
 end
