@@ -40,6 +40,7 @@ HCP.Headcrabs = {
 	["npc_headcrab_fast"] = "npc_fastzombie",
 	["npc_headcrab_black"] = "npc_poisonzombie",
 	["npc_headcrab_poison"] = "npc_poisonzombie",
+	["monster_headcrab"] = "npc_zombie",
 }
 
 HCP.Zombies = {
@@ -52,35 +53,72 @@ HCP.Zombies = {
 HCP.InstantKill = {
 	["npc_headcrab"] = true,
 	["npc_headcrab_fast"] = true,
+	["monster_headcrab"] = true,
+}
+
+--[[
+	HCP.Rules = {
+		[model] = {
+			class = "", -- Zombie Class to always use
+			req_class = "", -- Zombie Classs required 
+			model = "", -- Model to change bonemerge to
+			bg = "", -- Bodygroup String to enforce on bonemerge
+			bgz = "", -- Bodygroup String to enforce on zombie
+			skin = "", -- Skin to enforce on bonemerge
+		}
+	}
+]]
+HCP.Rules = {
+	["models/scientist.mdl"] = {
+		class = "monster_zombie",
+		req_class = "npc_zombie",
+		model = false,
+	}
 }
 
 -- Determines if a Headcrab can take over an Entity (returns Bool)
 function HCP.CheckTakeOver(entity, cosmetic, attacker)
-	if attacker and (not IsValid(attacker) or not HCP.GetZombieClass(attacker:GetClass())) then return false end
-	if not IsValid(entity) or not HCP.CheckHeadBone(cosmetic or entity) then return false end
+	if attacker and (not IsValid(attacker) or not HCP.GetZombieClass(attacker:GetClass(), entity)) then print("niv attacker or failed class") return false end
+	if not IsValid(entity) or not HCP.CheckHeadBone(cosmetic or entity) then print("bad headbone") return false end
 	if entity:IsPlayer() and HCP.GetConvarBool("takeover_players") then return true end
 	if entity:IsNPC() and HCP.GetConvarBool("takeover_npcs") then return true end
+	print("not npc / player")
 	return false
 end
 
 -- Determines if the entity has a valid Head Bone (returns Bool)
 function HCP.CheckHeadBone(entity)
-	return entity.HCP_Ignore or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
+	return HCP.Rules[entity:GetModel()] ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil or HCP.IsHL1(entity)
 end
 
+function HCP.IsHL1(entity)
+	return entity:LookupBone("Bip01 Head") ~= nil
+end
 -- Finds the zombie class for the given class and entity (returns String)
--- If no entity is provided, the function will not do a Zombine Check
+-- If no entity is provided, the function will not do a HL1 or Zombine Check
 function HCP.GetZombieClass(headcrab_class, entity)
 	local class = HCP.Headcrabs[headcrab_class]
 	if HCP.GetConvarBool("enable_infection") and HCP.Zombies[headcrab_class] then
 		class = headcrab_class ~= "npc_zombine" and headcrab_class or "npc_zombie"
 	end
 
-	if IsValid(entity) and class == "npc_zombie" and HCP.GetConvarBool("enable_zombines") and HCP.ZombineModels[entity:GetModel()] then
-		if entity:IsPlayer() and HCP.GetConvarBool("enable_player_zombines") then
-			return "npc_zombine"
-		elseif not entity:IsPlayer() then
-			return "npc_zombine"
+	if IsValid(entity) then
+		local rules = HCP.Rules[entity:GetModel()]
+		if rules then
+			if rules.req_class and rules.req_class ~= class then return false end
+			class = rules.class or rules.class ~= false and class
+		end
+
+		if HCP.IsHL1(entity) then
+			return class == "npc_zombie" and "monster_zombie" or false
+		end
+
+		if class == "npc_zombie" and HCP.GetConvarBool("enable_zombines") and HCP.ZombineModels[entity:GetModel()] then
+			if entity:IsPlayer() and HCP.GetConvarBool("enable_player_zombines") then
+				return "npc_zombine"
+			elseif not entity:IsPlayer() then
+				return "npc_zombine"
+			end
 		end
 	end
 	return class or false
@@ -129,11 +167,22 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 		return true
 	end
 
-	if not nobonemerge then
+	local rules = HCP.Rules[entity:GetModel()]
+	if rules then
+		model = HCP.Rules[entity:GetModel()].model or model ~= nil and model
+	end
+
+	if not nobonemerge and model ~= false then
 		local bonemerge = HCP.CreateBonemerge(target, model or entity:GetModel(), skin or entity:GetSkin())
-		if entity.GetPlayerColor and not entity.HCP_TTT then bonemerge:SetPlayerColorEnabled(true) bonemerge:SetMockPlayerColor(entity:GetPlayerColor()) end
+		if entity.GetPlayerColor then bonemerge:SetPlayerColorEnabled(true) bonemerge:SetMockPlayerColor(entity:GetPlayerColor()) end
 		for k, v in pairs(entity:GetBodyGroups()) do
 			bonemerge:SetBodygroup(v.id, entity:GetBodygroup(v.id))
+		end
+
+		if rules then
+			if rules.bg then bonemerge:SetBodyGroups(rules.bg) end
+			if rules.bgz then target:SetBodyGroups(rules.bgz) end
+			if rules.skin then bonemerge:SetSkin(rules.skin) end
 		end
 
 		return bonemerge
@@ -217,10 +266,14 @@ function HCP.CreateDeathRagdoll(entity)
 	end
 
 	-- Don't show the headcrab on the ragdoll if one was dropped
-	if entity.HCP_Death == DEATH_NODROP then
+	if entity.HCP_Death == DEATH_NODROP or HCP.IsHL1(entity) then
 		deathragdoll:SetBodygroup(1,1)
 	else
 		deathragdoll.HCP_Bonemerge:SetShouldScale(false)
+	end
+
+	if entity.HCP_HLCrab then
+		deathragdoll:SetSubMaterial(1, "models/headcrab_classic/headcrabsheet_hl1")
 	end
 
 	entity:SetModel("models/props_junk/watermelon01_chunk02c.mdl")
@@ -260,6 +313,11 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 	if not zclass then return end
 
 	local zombie = HCP.CreateZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge") and not entity.HCP_TTT)
+
+	if attacker:GetClass() == "monster_headcrab" and zclass == "npc_zombie" then
+		zombie.HCP_HLCrab = true
+		zombie:SetSubMaterial(1, "models/headcrab_classic/headcrabsheet_hl1")
+	end
 
 	if HCP.GetConvarBool("remove_attacker") and not HCP.Zombies[attacker:GetClass()] then
 		attacker:Remove()
@@ -454,7 +512,7 @@ hook.Add("InitPostEntity", "HCP_CompatHooks", function()
 			if npc.IsHeadcrabPlus and IsValid(npc.HCP_boneMerge) then return end
 			return oldbgo(npc, attacker, inflictor)
 		end)
-	end	
+	end
 end)
 
 -- Diagnostics for bug reports
@@ -466,6 +524,7 @@ local Hooks = {
 	"OnNPCKilled",
 	"PlayerDeath",
 }
+
 local functions = {}
 local function ReadHookFile(info)
 	local source = "lua/" .. string.gsub(info.source, "@(.*)lua/", "", 1)
@@ -501,6 +560,7 @@ concommand.Add("hcp_diagnostic", function(ply)
 	str = str .. "\n\n-----List of Hooks----"
 	for k, v in pairs(Hooks) do
 		str = str .. "\n" .. v .. ":"
+		if not hook.GetTable()[v] then str = str .. " Invalid Hook Table" continue end
 		for a, b in SortedPairs(hook.GetTable()[v]) do
 			str = str .. "\n\t" .. a
 			functions[v .. "." .. a] = b

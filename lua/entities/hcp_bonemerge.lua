@@ -12,9 +12,17 @@ function ENT:Initialize()
 		self:AddEffects(bit.bor(EF_BONEMERGE))
 	end
 
-	if IsValid(self:GetParent()) then
-		self:GetParent():SetSubMaterial(0, "models/effects/vol_light001")
-		self:GetParent():SetSkin(100)
+	local parent = self:GetParent()
+	if IsValid(parent) then
+		if parent:GetModel() == "models/zombie.mdl" then
+			parent:SetSubMaterial(10, "models/effects/vol_light001")
+			for i = 12, 18 do
+				parent:SetSubMaterial(i, "models/effects/vol_light001")
+			end
+		else
+			parent:SetSubMaterial(0, "models/effects/vol_light001")
+			parent:SetSkin(100)
+		end
 	end
 
 	self:AddCallback("BuildBonePositions", self.BuildBonePositions)
@@ -49,8 +57,10 @@ end
 function ENT:BuildBonePositions(boneCount)
 	if not self:GetShouldScale() or not IsValid(self:GetParent()) then return end
 
+	self:Resize("Bip01 Head")
+	self:Resize("Bone05", Vector(0.5, 0.5, 0.5))
 
-	if self:GetParent():GetClass() == "npc_poisonzombie" then
+	if self:GetParent():GetModel() == "models/zombie/poison.mdl" then
 		self:Resize("ValveBiped.Bip01_Head1", Vector(0.8, 0.8, 0.8), Angle(-90, 130, 0))
 	else
 		self:Resize("ValveBiped.Bip01_Head1")

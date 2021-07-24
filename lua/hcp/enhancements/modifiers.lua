@@ -1,6 +1,7 @@
 HCP.Modifiers = {
 	-- Convar, Default Damage, Default Health
 	["npc_headcrab"] = {5, 10},
+	["monster_headcrab"] = "npc_headcrab",
 	["npc_headcrab_fast"] = {5, 10},
 	["npc_headcrab_black"] = {false, 35},
 	["npc_headcrab_poison"] = "npc_headcrab_black",
