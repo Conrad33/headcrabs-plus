@@ -78,11 +78,10 @@ HCP.Rules = {
 
 -- Determines if a Headcrab can take over an Entity (returns Bool)
 function HCP.CheckTakeOver(entity, cosmetic, attacker)
-	if attacker and (not IsValid(attacker) or not HCP.GetZombieClass(attacker:GetClass(), entity)) then print("niv attacker or failed class") return false end
-	if not IsValid(entity) or not HCP.CheckHeadBone(cosmetic or entity) then print("bad headbone") return false end
+	if attacker and (not IsValid(attacker) or not HCP.GetZombieClass(attacker:GetClass(), entity)) then return false end
+	if not IsValid(entity) or not HCP.CheckHeadBone(cosmetic or entity) then return false end
 	if entity:IsPlayer() and HCP.GetConvarBool("takeover_players") then return true end
 	if entity:IsNPC() and HCP.GetConvarBool("takeover_npcs") then return true end
-	print("not npc / player")
 	return false
 end
 
