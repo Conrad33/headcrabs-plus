@@ -6,6 +6,16 @@ killicon.Add("npc_headcrab_fast", "hud/killicons/npc_headcrab_fast", Color(255, 
 killicon.Add("npc_headcrab_black", "hud/killicons/npc_headcrab_black", Color(255, 80, 0, 255))
 killicon.Add("npc_headcrab_poison", "hud/killicons/npc_headcrab_black", Color(255, 80, 0, 255))
 
+-- Some people won't like this, but Garry's Mod is just badly inconsistent sometimes
+local function RecvNPCKilledNPC()
+	local victim	= "#" .. net.ReadString()
+	local inflictor	= net.ReadString()
+	local attacker	= net.ReadString()
+
+	GAMEMODE:AddDeathNotice( "#" .. attacker, -1, inflictor ~= "worldspawn" and inflictor or attacker, victim, -1 )
+end
+net.Receive( "NPCKilledNPC", RecvNPCKilledNPC )
+
 local function HCP_AddOption(panel, convar, name)
 	if convar[3] == "bool" then
 		local box = panel:CheckBox(name or "#hcp.cv." .. convar[1], "hcp_" .. convar[1])
