@@ -48,6 +48,7 @@ HCP.Zombies = {
 	["npc_fastzombie"] = true,
 	["npc_poisonzombie"] = true,
 	["npc_zombine"] = true,
+	["monster_zombie"] = true,
 }
 
 HCP.InstantKill = {

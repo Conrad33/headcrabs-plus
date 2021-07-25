@@ -90,16 +90,14 @@ local function HCP_Modifiers(CPanel)
 	local health = vgui.Create("DForm", CPanel)
 	health:SetName("#hcp.ui.health_modifiers")
 	for k, v in pairs(HCP.Convars["health_modifiers"]) do
-		local name = list.Get("NPC")["npc_" .. v[1]:sub(#"health_" + 1)]
-		HCP_AddOption(health, v, name and name.Name or "npc_" .. v[1]:sub(#"health_" + 1))
+		HCP_AddOption(health, v, "#npc_" .. v[1]:sub(#"health_" + 1))
 	end
 	CPanel:AddItem(health)
 
 	local dmg = vgui.Create("DForm", CPanel)
 	dmg:SetName("#hcp.ui.dmg_modifiers")
 	for k, v in pairs(HCP.Convars["dmg_modifiers"]) do
-		local name = list.Get("NPC")["npc_" .. v[1]:sub(#"dmg_" + 1)]
-		HCP_AddOption(dmg, v, name and name.Name or "npc_" .. v[1]:sub(#"dmg_" + 1))
+		HCP_AddOption(dmg, v, "#npc_" .. v[1]:sub(#"dmg_" + 1))
 	end
 	CPanel:AddItem(dmg)
 
