@@ -54,7 +54,7 @@ function TOOL:LeftClick(tr)
 		zombie:SetHealth(self:GetClientNumber("health") or 100)
 	end)
 
-	if model and not IsUselessModel(model) then
+	if model and util.IsValidModel(model) then
 		local bonemerge = HCP.CreateBonemerge(zombie, model, nil, self:GetClientNumber("removeheadcrab") == 1)
 		if self:GetClientNumber("bzero") == 1 then bonemerge:SetBodygroup(1, 1) end
 		if not bonemerge:LookupBone("ValveBiped.Bip01_Head1") and self:GetClientNumber("override") ~= 1 then

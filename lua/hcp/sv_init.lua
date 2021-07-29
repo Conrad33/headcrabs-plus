@@ -70,17 +70,28 @@ HCP.InstantKill = {
 	}
 ]]
 HCP.Rules = {
+	-- HL1 Scientist
 	["models/scientist.mdl"] = {
 		class = "monster_zombie",
 		req_class = "npc_zombie",
 		model = false,
-	}
+	},
+
+	-- BMS Support
+	["models/player/bms_kleiner.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
+	["models/player/bms_scientist.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
+	["models/player/bms_scientist_female.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
+	["models/humans/scientist.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
+	["models/humans/scientist_female.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
+
+	["models/player/bms_guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", bg = "01"},
+	["models/humans/guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", bg = "01"},
 }
 
 -- Determines if a Headcrab can take over an Entity (returns Bool)
 function HCP.CheckTakeOver(entity, cosmetic, attacker)
 	if attacker and (not IsValid(attacker) or not HCP.GetZombieClass(attacker:GetClass(), entity)) then return false end
-	if not IsValid(entity) or not HCP.CheckHeadBone(cosmetic or entity) then return false end
+	if not IsValid(entity) or not (HCP.CheckHeadBone(cosmetic or entity) or HCP.IsHL1(entity or cosmetic)) then return false end
 	if entity:IsPlayer() and HCP.GetConvarBool("takeover_players") then return true end
 	if entity:IsNPC() and HCP.GetConvarBool("takeover_npcs") then return true end
 	return false
@@ -88,7 +99,7 @@ end
 
 -- Determines if the entity has a valid Head Bone (returns Bool)
 function HCP.CheckHeadBone(entity)
-	return HCP.Rules[entity:GetModel()] ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil or HCP.IsHL1(entity)
+	return HCP.Rules[entity:GetModel()] ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
 end
 
 function HCP.IsHL1(entity)
@@ -166,7 +177,11 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 
 	local rules = HCP.Rules[entity:GetModel()]
 	if rules then
-		model = HCP.Rules[entity:GetModel()].model or model ~= nil and model
+		if rules.model == false then
+			model = false
+		elseif isstring(rules.model) and util.IsValidModel(rules.model) then
+			model = rules.model
+		end
 	end
 
 	if not nobonemerge and model ~= false then
@@ -322,9 +337,8 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 		attacker.HCP_DMGLock = nil
 	end
 
-	if IsValid(attacker.HCP_Owner) then
-		local owner = attacker.HCP_Owner
-
+	local owner = attacker.HCP_Owner
+	if IsValid(owner) then
 		if owner:GetInfoNum("hcp_enable_undolist", 1) == 1 then
 			undo.Create("Zombified_Headcrab")
 				undo.AddEntity(zombie)
@@ -345,7 +359,7 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 	return zombie
 end
 
-hook.Add("PlayerSpawnedNPC", "headCrabsPlus_OwnerTracker", function(ply, ent)
+hook.Add("PlayerSpawnedNPC", "HCP_OwnerTracker", function(ply, ent)
 	if not IsValid(ply) or not IsValid(ent) then return end
 	ent.HCP_Owner = ply
 end)
@@ -494,7 +508,7 @@ hook.Add("InitPostEntity", "HCP_CompatHooks", function()
 	local hooktable = hook.GetTable()
 
 	-- Stop P.K. Pills hook from returning during player death
-	if hooktable["DoPlayerDeath"]["pk_pill_death"] then
+	if hooktable["DoPlayerDeath"] and hooktable["DoPlayerDeath"]["pk_pill_death"] then
 		local oldpk = hooktable["DoPlayerDeath"]["pk_pill_death"]
 		hook.Add("DoPlayerDeath", "pk_pill_death", function(ply, attacker)
 			if IsValid(pk_pills.getMappedEnt(ply)) and HCP.CheckTakeOver(ply, pk_pills.getMappedEnt(ply):GetPuppet(), attacker) then return end
@@ -503,7 +517,7 @@ hook.Add("InitPostEntity", "HCP_CompatHooks", function()
 	end
 
 	-- Stop Blood and Gore Overhaul 3 from gibbing zombies
-	if hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"] then
+	if hooktable["OnNPCKilled"] and hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"] then
 		local oldbgo = hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"]
 		hook.Add("OnNPCKilled", "BGORagdollsConvertNPC", function(npc, attacker, inflictor)
 			if npc.IsHeadcrabPlus and IsValid(npc.HCP_boneMerge) then return end

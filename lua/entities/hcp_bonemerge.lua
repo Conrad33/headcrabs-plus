@@ -64,5 +64,7 @@ function ENT:BuildBonePositions(boneCount)
 		self:Resize("ValveBiped.Bip01_Head1", Vector(0.8, 0.8, 0.8), Angle(-90, 130, 0))
 	else
 		self:Resize("ValveBiped.Bip01_Head1")
+		self:Resize("ValveBiped.forward")
+		self:Resize("jaw05")
 	end
 end
