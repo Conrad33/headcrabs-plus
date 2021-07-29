@@ -57,13 +57,16 @@ end
 function ENT:BuildBonePositions(boneCount)
 	if not self:GetShouldScale() or not IsValid(self:GetParent()) then return end
 
+	-- HL1 Models
 	self:Resize("Bip01 Head")
 	self:Resize("Bone05", Vector(0.5, 0.5, 0.5))
+	self:Resize("Bone06")
 
 	if self:GetParent():GetModel() == "models/zombie/poison.mdl" then
 		self:Resize("ValveBiped.Bip01_Head1", Vector(0.8, 0.8, 0.8), Angle(-90, 130, 0))
 	else
 		self:Resize("ValveBiped.Bip01_Head1")
+		-- BMS Models
 		self:Resize("ValveBiped.forward")
 		self:Resize("jaw05")
 	end

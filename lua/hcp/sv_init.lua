@@ -41,6 +41,7 @@ HCP.Headcrabs = {
 	["npc_headcrab_black"] = "npc_poisonzombie",
 	["npc_headcrab_poison"] = "npc_poisonzombie",
 	["monster_headcrab"] = "npc_zombie",
+	["npc_vj_hlr1_headcrab"] = "npc_zombie",
 }
 
 HCP.Zombies = {
@@ -71,11 +72,7 @@ HCP.InstantKill = {
 ]]
 HCP.Rules = {
 	-- HL1 Scientist
-	["models/scientist.mdl"] = {
-		class = "monster_zombie",
-		req_class = "npc_zombie",
-		model = false,
-	},
+	["models/scientist.mdl"] = {class = "monster_zombie", req_class = "npc_zombie", model = false},
 
 	-- BMS Support
 	["models/player/bms_kleiner.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
@@ -86,6 +83,22 @@ HCP.Rules = {
 
 	["models/player/bms_guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", bg = "01"},
 	["models/humans/guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", bg = "01"},
+
+	-- VJ Base HL:R
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlrbs_rosenberg"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+
+	["npc_vj_hlr1_securityguard"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_sec", model = false},
+	["npc_vj_hlrof_otis"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_sec", model = false},
+
+	["npc_vj_hlrof_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlr1_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlrof_hgrunt_eng"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlrof_hgrunt_med"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlr1_hgrunt_serg"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
 }
 
 -- Determines if a Headcrab can take over an Entity (returns Bool)
@@ -99,11 +112,11 @@ end
 
 -- Determines if the entity has a valid Head Bone (returns Bool)
 function HCP.CheckHeadBone(entity)
-	return HCP.Rules[entity:GetModel()] ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
+	return (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()]) ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
 end
 
 function HCP.IsHL1(entity)
-	return entity:LookupBone("Bip01 Head") ~= nil
+	return IsMounted("hl1") and entity:LookupBone("Bip01 Head") ~= nil
 end
 -- Finds the zombie class for the given class and entity (returns String)
 -- If no entity is provided, the function will not do a HL1 or Zombine Check
@@ -114,13 +127,13 @@ function HCP.GetZombieClass(headcrab_class, entity)
 	end
 
 	if IsValid(entity) then
-		local rules = HCP.Rules[entity:GetModel()]
+		local rules = (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()])
 		if rules then
 			if rules.req_class and rules.req_class ~= class then return false end
 			class = rules.class or rules.class ~= false and class
 		end
 
-		if HCP.IsHL1(entity) then
+		if HCP.IsHL1(entity) and not rules then
 			return class == "npc_zombie" and "monster_zombie" or false
 		end
 
@@ -175,7 +188,7 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 		return true
 	end
 
-	local rules = HCP.Rules[entity:GetModel()]
+	local rules = (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()])
 	if rules then
 		if rules.model == false then
 			model = false
@@ -303,7 +316,7 @@ function HCP.CreateZombie(zclass, entity, nobonemerge)
 	zombie:Spawn()
 	zombie:Activate()
 	zombie:SetNoDraw(false)
-	zombie.IsHeadcrabPlus = true
+	zombie.IsHeadcrabsPlus = true
 
 	if zclass == "npc_poisonzombie" then
 		for k,v in pairs(zombie:GetBodyGroups()) do
@@ -520,7 +533,7 @@ hook.Add("InitPostEntity", "HCP_CompatHooks", function()
 	if hooktable["OnNPCKilled"] and hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"] then
 		local oldbgo = hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"]
 		hook.Add("OnNPCKilled", "BGORagdollsConvertNPC", function(npc, attacker, inflictor)
-			if npc.IsHeadcrabPlus and IsValid(npc.HCP_boneMerge) then return end
+			if npc.IsHeadcrabsPlus and IsValid(npc.HCP_boneMerge) then return end
 			return oldbgo(npc, attacker, inflictor)
 		end)
 	end
