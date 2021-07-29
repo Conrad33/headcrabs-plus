@@ -144,26 +144,23 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 			zombineskin = zombineskin[entity:GetSkin()] or true
 		end
 
-		if zclass == "npc_zombie" or zclass == "npc_fastzombie" then
-			if (not skintable or not skintable[1]) and isnumber(zombineskin) then
+		if zclass == "npc_zombie" or zclass == "npc_fastzombie" or zclass == "npc_zombine" then
+			if isnumber(zombineskin) then
 				model = "models/zombie/zombie_soldier.mdl"
 				skin = zombineskin
-			elseif skintable then
+			elseif skintable and skintable[1] then
 				model = "models/zombie/classic.mdl"
 				skin = skintable[1]
 			end
-		elseif skintable and zclass == "npc_poisonzombie" then
+		elseif zclass == "npc_poisonzombie" and skintable and skintable[2] then
 			model = "models/zombie/poison.mdl"
 			skin = skintable[2]
-		elseif isnumber(zombineskin) and zclass == "npc_zombine" then
-			model = "models/zombie/zombie_soldier.mdl"
-			skin = zombineskin
 		end
 	end
 
 	-- Don't use bonemerge if the found model and zombie model are the same
 	if target:GetModel() == model then
-		target:SetSkin(skin)
+		target:SetSkin(skin or 100)
 		return true
 	end
 
