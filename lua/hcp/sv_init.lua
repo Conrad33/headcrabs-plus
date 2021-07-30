@@ -406,7 +406,7 @@ end)
 
 hook.Add("OnNPCKilled", "HCP_NPCDeath", function(npc, inflictor, attacker)
 	-- Handle Death Ragdolls
-	if IsValid(npc.HCP_Bonemerge) then
+	if IsValid(npc.HCP_Bonemerge) and npc:GetClass() ~= "prop_ragdoll" then
 		if not HCP.GetConvarBool("enable_bonemerge_ragdolls") then
 			npc.HCP_Bonemerge:Remove()
 		end

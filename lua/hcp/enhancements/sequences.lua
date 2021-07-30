@@ -5,6 +5,13 @@ HCP.ZombieModels = {
 	["npc_zombine"] = "models/zombie/zombie_soldier.mdl",
 }
 
+HCP.ZombieHeadcrabModels = {
+	["npc_zombie"] = "models/headcrabclassic.mdl",
+	["npc_fastzombie"] = "models/headcrab.mdl",
+	["npc_poisonzombie"] = "models/headcrabblack.mdl",
+	["npc_zombine"] = "models/headcrabclassic.mdl",
+}
+
 -- Creates a Zombie Ragdoll from an Entity (returns Entity)
 function HCP.CreateSleepingZombie(zclass, entity, nobonemerge)
 	if not HCP.ZombieModels[zclass] then return false end
@@ -17,6 +24,7 @@ function HCP.CreateSleepingZombie(zclass, entity, nobonemerge)
 	rag:SetBodygroup(1, 1)
 	rag.HCP_ZClass = zclass
 	rag.HCP_YAngle = entity:GetAngles().y
+	rag.HCP_Health = 50
 
 	if not nobonemerge then
 		local bonemerge = HCP.CreateBonemerge(rag, entity:GetModel(), entity:GetSkin())
@@ -88,3 +96,34 @@ function HCP.CreateTrigger(size, entity)
 	entity:DeleteOnRemove(trigger)
 	return trigger
 end
+
+-- Add the ability to kill sleeping zombies
+hook.Add("EntityTakeDamage", "HCP_DamageRagdolls", function(ent, dmginfo)
+	if not ent.HCP_Health or not IsValid(dmginfo:GetAttacker()) then return end
+	ent.HCP_Health = ent.HCP_Health - dmginfo:GetDamage()
+
+	if ent.HCP_Health <= 0 then
+		hook.Run("OnNPCKilled", ent, dmginfo:GetAttacker(), dmginfo:GetInflictor())
+
+		SafeRemoveEntity(ent.HCP_Trigger)
+		ent.HCP_Health = nil
+		ent:EmitSound("npc/zombie/zombie_die1.wav")
+		if not GetConVar("ai_serverragdolls"):GetBool() then
+			ent:Fire("FadeAndRemove", "", 60)
+			ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+		end
+
+		ent:SetBodygroup(1, 0)
+		if ent.HCP_Bonemerge then ent.HCP_Bonemerge:SetShouldScale(false) end
+
+		local attachment = ent:GetAttachment(ent:LookupAttachment("headcrab")) or {Pos = ent:GetPos(), Ang = ent:GetAngles()}
+		local headcrab = ents.Create("prop_ragdoll")
+		headcrab:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+		headcrab:Fire("FadeAndRemove", "", 60)
+		headcrab:SetPos(attachment.Pos)
+		headcrab:SetAngles(attachment.Ang)
+		headcrab:SetModel(HCP.ZombieHeadcrabModels[ent.HCP_ZClass or "npc_zombie"])
+		headcrab:Spawn()
+		headcrab:GetPhysicsObject():SetVelocity(Vector(0, 0, 300))
+	end
+end)
