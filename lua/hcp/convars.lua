@@ -26,7 +26,7 @@ function HCP.GetConvarBool(name)
 end
 
 function HCP.GetConvarInt(name)
-	if not GetConVar("hcp_" .. name) then return false end
+	if not GetConVar("hcp_" .. name) then return 0 end
 	return GetConVar("hcp_" .. name):GetInt()
 end
 
@@ -49,12 +49,12 @@ HCP.CreateConvar("instantkill", "instantkill_behind", 0, "bool")
 HCP.CreateConvar("instantkill", "instantkill_chance", 0, "range", {1, 100})
 
 -- Scripted Sequences Convars
-HCP.CreateConvar("scripted", "takeover_animation", 0, "bool")
+HCP.CreateConvar("scripted", "takeover_animation", 0, "bool", nil, function(p, box) box:SetEnabled(false) end)
 HCP.CreateConvar("scripted", "enable_burrowing", 0, "bool")
-HCP.CreateConvar("scripted", "burrowing_range", 50, "range", {1, 500})
+HCP.CreateConvar("scripted", "burrowing_range", 400, "range", {400, 1500})
 HCP.CreateConvar("scripted", "enable_sleeping", 0, "bool")
-HCP.CreateConvar("scripted", "sleeping_range", 50, "range", {1, 500})
-HCP.CreateConvar("scripted", "sleeping_time", 10, "range", {1, 500})
+HCP.CreateConvar("scripted", "sleeping_range", 400, "range", {400, 1500})
+HCP.CreateConvar("scripted", "sleeping_time", 10, "range", {5, 90})
 
 -- Poison Headcrab Convars
 HCP.CreateConvar("poison", "poison_bites", 3, "range", {0, 5})

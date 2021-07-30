@@ -47,10 +47,9 @@ local function HCP_Menu(CPanel)
 	-- Scripted Sequences Options
 	local sequences = vgui.Create("DForm", CPanel)
 	sequences:SetName("#hcp.ui.scripted")
-	sequences:Help("Work in Progress, will be in v4.1"):DockMargin(0, 0, 8, 8)
-	sequences:SetExpanded(false)
+	sequences:Help("Work in Progress"):DockMargin(0, 0, 8, 8)
 	for k, v in pairs(HCP.Convars["scripted"]) do
-		HCP_AddOption(sequences, v):SetEnabled(false)
+		HCP_AddOption(sequences, v)
 	end
 	CPanel:AddItem(sequences)
 

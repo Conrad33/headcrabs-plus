@@ -4,6 +4,8 @@ include("hcp/convars.lua")
 include("hcp/enhancements/modifiers.lua")
 include("hcp/enhancements/sabrean.lua")
 include("hcp/enhancements/poison.lua")
+include("hcp/enhancements/rules.lua")
+include("hcp/enhancements/sequences.lua")
 
 local DEATH_DISSOLVE, DEATH_NODROP = 1, 2
 
@@ -56,49 +58,7 @@ HCP.InstantKill = {
 	["npc_headcrab"] = true,
 	["npc_headcrab_fast"] = true,
 	["monster_headcrab"] = true,
-}
-
---[[
-	HCP.Rules = {
-		[model] = {
-			class = "", -- Zombie Class to always use
-			req_class = "", -- Zombie Classs required 
-			model = "", -- Model to change bonemerge to
-			bg = "", -- Bodygroup String to enforce on bonemerge
-			bgz = "", -- Bodygroup String to enforce on zombie
-			skin = "", -- Skin to enforce on bonemerge
-		}
-	}
-]]
-HCP.Rules = {
-	-- HL1 Scientist
-	["models/scientist.mdl"] = {class = "monster_zombie", req_class = "npc_zombie", model = false},
-
-	-- BMS Support
-	["models/player/bms_kleiner.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
-	["models/player/bms_scientist.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
-	["models/player/bms_scientist_female.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
-	["models/humans/scientist.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
-	["models/humans/scientist_female.mdl"] = {model = "models/zombies/zombie_sci.mdl", bg = "01"},
-
-	["models/player/bms_guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", bg = "01"},
-	["models/humans/guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", bg = "01"},
-
-	-- VJ Base HL:R
-	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlrbs_rosenberg"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
-
-	["npc_vj_hlr1_securityguard"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_sec", model = false},
-	["npc_vj_hlrof_otis"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_sec", model = false},
-
-	["npc_vj_hlrof_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlr1_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlrof_hgrunt_eng"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlrof_hgrunt_med"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlr1_hgrunt_serg"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlr1_headcrab"] = true,
 }
 
 -- Determines if a Headcrab can take over an Entity (returns Bool)
@@ -130,7 +90,11 @@ function HCP.GetZombieClass(headcrab_class, entity)
 		local rules = (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()])
 		if rules then
 			if rules.req_class and rules.req_class ~= class then return false end
-			class = rules.class or rules.class ~= false and class
+			if rules.class and (HCP.Zombies[rules.class] or scripted_ents.Get(rules.class)) and (class == rules.req_class or class == "npc_zombie") then
+				class = rules.class
+			elseif rules.class == false then
+				return false
+			end
 		end
 
 		if HCP.IsHL1(entity) and not rules then
@@ -183,7 +147,7 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 	end
 
 	-- Don't use bonemerge if the found model and zombie model are the same
-	if target:GetModel() == model then
+	if target:GetModel() == model or target:GetModel() == entity:GetModel() then
 		target:SetSkin(skin or 100)
 		return true
 	end
@@ -311,8 +275,12 @@ end
 -- Creates a bonemerged zombie matching the Entity (returns Entity)
 function HCP.CreateZombie(zclass, entity, nobonemerge)
 	local zombie = ents.Create(zclass)
+	if not IsValid(zombie) then
+		return false
+	end
+
 	zombie:SetPos(entity:GetPos())
-	zombie:SetAngles(entity:GetAngles())
+	zombie:SetAngles(Angle(0, entity.HCP_YAngle or entity:GetAngles().y, 0))
 	zombie:Spawn()
 	zombie:Activate()
 	zombie:SetNoDraw(false)
@@ -337,9 +305,17 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 	local zclass = HCP.GetZombieClass(attacker:GetClass(), cosmetic or entity)
 	if not zclass then return end
 
-	local zombie = HCP.CreateZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge") and not entity.HCP_TTT)
+	local zombie
+	if not entity.HCP_TTT and HCP.GetConvarBool("enable_sleeping") and HCP.ZombieModels[zclass] then
+		zombie = HCP.CreateSleepingZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge"))
+	else
+		zombie = HCP.CreateZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge") and not entity.HCP_TTT)
+	end
+	if not IsValid(zombie) then return end
 
-	if attacker:GetClass() == "monster_headcrab" and zclass == "npc_zombie" then
+	zombie:EmitSound("npc/barnacle/barnacle_crunch2.wav")
+
+	if (attacker:GetClass() == "monster_headcrab" or attacker:GetClass() == "npc_vj_hlr1_headcrab") and zombie:GetClass() == "npc_zombie" then
 		zombie.HCP_HLCrab = true
 		zombie:SetSubMaterial(1, "models/headcrab_classic/headcrabsheet_hl1")
 	end
