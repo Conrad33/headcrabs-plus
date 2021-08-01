@@ -163,7 +163,7 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 
 	if not nobonemerge and model ~= false then
 		local bonemerge = HCP.CreateBonemerge(target, model or entity:GetModel(), skin or entity:GetSkin())
-		if entity.GetPlayerColor then bonemerge:SetPlayerColorEnabled(true) bonemerge:SetMockPlayerColor(entity:GetPlayerColor()) end
+		if entity.GetPlayerColor and entity:GetPlayerColor() then bonemerge:SetPlayerColor(entity:GetPlayerColor()) end
 		for k, v in pairs(entity:GetBodyGroups()) do
 			bonemerge:SetBodygroup(v.id, entity:GetBodygroup(v.id))
 		end
@@ -188,8 +188,7 @@ function HCP.CopyBonemerge(bonemerge, target)
 	for k, v in pairs(bonemerge:GetBodyGroups()) do
 		newmerge:SetBodygroup(v.id, bonemerge:GetBodygroup(v.id))
 	end
-	newmerge:SetMockPlayerColor(bonemerge:GetMockPlayerColor())
-	newmerge:SetPlayerColorEnabled(bonemerge:GetPlayerColorEnabled())
+	if bonemerge.GetPlayerColor and bonemerge:GetPlayerColor() then newmerge:SetPlayerColor(bonemerge:GetPlayerColor()) end
 
 	return newmerge
 end
@@ -306,7 +305,7 @@ function HCP.HandleTakeover(attacker, entity, cosmetic)
 	if not zclass then return end
 
 	local zombie
-	if not entity.HCP_TTT and HCP.GetConvarBool("enable_sleeping") and HCP.ZombieModels[zclass] then
+	if HCP.GetConvarBool("enable_sleeping") and HCP.ZombieModels[zclass] then
 		zombie = HCP.CreateSleepingZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge"))
 	else
 		zombie = HCP.CreateZombie(zclass, cosmetic or entity, not HCP.GetConvarBool("enable_bonemerge") and not entity.HCP_TTT)

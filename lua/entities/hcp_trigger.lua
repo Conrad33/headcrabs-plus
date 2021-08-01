@@ -1,10 +1,53 @@
 if CLIENT then return end
+AccessorFunc(ENT, "m_Disabled", "Disabled", FORCE_BOOL)
 
 ENT.Type = "brush"
 ENT.Base = "base_brush"
-ENT.LastThink = 0
 
 function ENT:Initialize()
 	self:SetSolid(SOLID_BBOX)
 	self:SetTrigger(true)
+	self.Ents = {}
+end
+
+function ENT.ShouldIgnore(ent)
+	if not IsValid(ent) or GetConVar("ai_disabled"):GetBool() then return true end
+	if ent:IsNPC() and not (HCP.Zombies[ent:GetClass()] or HCP.Headcrabs[ent:GetClass()]) then return false end
+	if ent:IsPlayer() and not GetConVar("ai_ignoreplayers"):GetBool() then return false end
+	return true
+end
+
+function ENT:CheckValid()
+	if not IsValid(self.HCP_Entity) then
+		self:SetDisabled(true)
+		self:Remove()
+		return true
+	end
+end
+
+function ENT:StartTouch(ent)
+	if self:CheckValid() or self.ShouldIgnore(ent) then return end
+	self.Ents[ent] = true
+	if self:GetDisabled() then return end
+	self:CustomStartTouch(ent)
+end
+
+function ENT:EndTouch(ent)
+	self.Ents[ent] = nil
+	if self:CheckValid() or self:GetDisabled() or self.ShouldIgnore(ent) then return end
+	self:CustomEndTouch(ent)
+end
+
+function ENT:Touch(ent)
+	if self:CheckValid() or self:GetDisabled() or self.ShouldIgnore(ent) then return end
+	self:CustomTouch(ent)
+end
+
+function ENT:CustomStartTouch()
+end
+
+function ENT:CustomEndTouch()
+end
+
+function ENT:CustomTouch()
 end

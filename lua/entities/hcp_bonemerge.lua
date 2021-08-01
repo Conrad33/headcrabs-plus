@@ -3,13 +3,12 @@ ENT.Type = "anim"
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 0, "ShouldScale")
-	self:NetworkVar("Bool", 1, "PlayerColorEnabled")
-	self:NetworkVar("Vector", 0, "MockPlayerColor")
+	self:NetworkVar("Vector", 0, "PlayerColor")
 end
 
 function ENT:Initialize()
 	if SERVER then
-		self:AddEffects(bit.bor(EF_BONEMERGE))
+		self:AddEffects(EF_BONEMERGE)
 	end
 
 	local parent = self:GetParent()
@@ -26,11 +25,6 @@ function ENT:Initialize()
 	end
 
 	self:AddCallback("BuildBonePositions", self.BuildBonePositions)
-end
-
-function ENT:GetPlayerColor()
-	if not self:GetPlayerColorEnabled() then return end
-	return self:GetMockPlayerColor()
 end
 
 function ENT:Draw()
