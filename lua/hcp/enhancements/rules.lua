@@ -44,4 +44,8 @@ HCP.Rules = {
 	["npc_vj_hlrof_hgrunt_med"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
 	["npc_vj_hlr1_hgrunt_serg"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
 	["npc_vj_hlr1a_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+
+	["models/vj_hlr/opfor/strooper.mdl"] = {class = false},
+	["models/vj_hlr/opfor/massn.mdl"] = {class = false},
+	["models/vj_hlr/hl1/rgrunt_black.mdl"] = {class = false},
 }

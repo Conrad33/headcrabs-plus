@@ -50,8 +50,9 @@ HCP.CreateConvar("instantkill", "instantkill_chance", 0, "range", {1, 100})
 
 -- Scripted Sequences Convars
 HCP.CreateConvar("scripted", "takeover_animation", 0, "bool", nil, function(p, box) box:SetEnabled(false) end)
-HCP.CreateConvar("scripted", "enable_burrowing", 0, "bool")
-HCP.CreateConvar("scripted", "burrowing_range", 400, "range", {400, 1500})
+HCP.CreateConvar("scripted", "enable_burrowing", 0, "bool", nil)
+HCP.CreateConvar("scripted", "burrowin_range", 900, "range", {900, 2000})
+HCP.CreateConvar("scripted", "burrowout_range", 500, "range", {100, 1500})
 HCP.CreateConvar("scripted", "enable_sleeping", 0, "bool")
 HCP.CreateConvar("scripted", "sleeping_range", 400, "range", {400, 1500})
 HCP.CreateConvar("scripted", "sleeping_time", 10, "range", {5, 90})

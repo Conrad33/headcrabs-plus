@@ -102,7 +102,7 @@ hook.Add("EntityTakeDamage", "HCP_DamageRagdolls", function(ent, dmginfo)
 		hook.Run("OnNPCKilled", ent, dmginfo:GetAttacker(), dmginfo:GetInflictor())
 
 		if IsValid(ent.HCP_Trigger) then
-			ent.HCP_Trigger.Disable = true
+			ent.HCP_Trigger:SetDisabled(true)
 			ent.HCP_Trigger:Remove()
 		end
 
@@ -125,5 +125,25 @@ hook.Add("EntityTakeDamage", "HCP_DamageRagdolls", function(ent, dmginfo)
 		headcrab:SetModel(HCP.ZombieHeadcrabModels[ent.HCP_ZClass or "npc_zombie"])
 		headcrab:Spawn()
 		headcrab:GetPhysicsObject():SetVelocity(Vector(0, 0, 300))
+	end
+end)
+
+-- Add trigger to let Headcrabs burrow
+hook.Add("OnEntityCreated", "HCP_HeadcrabTrigger", function(ent)
+	if not HCP.GetConvarBool("enable_burrowing") or not IsValid(ent) or ent:GetClass() ~= "npc_headcrab" then return end
+
+	ent.HCP_InTrigger = HCP.CreateTrigger(math.max(900, HCP.GetConvarInt("burrowin_range"), HCP.GetConvarInt("burrowout_range")), ent)
+	ent.HCP_OutTrigger = HCP.CreateTrigger(math.max(100, HCP.GetConvarInt("burrowout_range")), ent)
+
+	function ent.HCP_OutTrigger:CustomStartTouch(tent)
+		if self.HCP_Entity:GetInternalVariable("m_bBurrowed") then
+			self.HCP_Entity:Fire("Unburrow")
+		end
+	end
+
+	function ent.HCP_InTrigger:CustomEndTouch(tent)
+		if #table.GetKeys(self.Ents) == 0 then
+			self.HCP_Entity:Fire("BurrowImmediate")
+		end
 	end
 end)

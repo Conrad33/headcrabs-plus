@@ -1,5 +1,5 @@
 HCP = HCP or {}
-HCP.Version = "4.0c"
+HCP.Version = "4.1"
 
 if SERVER then
 	AddCSLuaFile("hcp/cl_init.lua")

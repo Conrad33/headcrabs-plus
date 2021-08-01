@@ -74,7 +74,7 @@ local function HCP_Menu(CPanel)
 	local about = vgui.Create("DForm", CPanel)
 	about:SetName("#hcp.about")
 	about:Help("Headcrabs Plus v" .. HCP.Version):DockMargin(0, 0, 8, 8)
-	about:Help("Made by Axel"):DockMargin(0, 0, 8, 8)
+	about:Help("Made by Shakes"):DockMargin(0, 0, 8, 8)
 	about:Button("#hcp.about.workshop").DoClick = function() gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=2463494681") end
 	about:Button("#hcp.about.bug_report", "hcp_diagnostic"):SetTextColor(Color(200, 0, 0))
 	about:Help("")

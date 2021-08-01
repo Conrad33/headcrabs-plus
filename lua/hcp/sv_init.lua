@@ -278,7 +278,7 @@ function HCP.CreateZombie(zclass, entity, nobonemerge)
 		return false
 	end
 
-	zombie:SetPos(entity:GetPos())
+	zombie:SetPos(entity:GetPos() + Vector(0, 0, 1))
 	zombie:SetAngles(Angle(0, entity.HCP_YAngle or entity:GetAngles().y, 0))
 	zombie:Spawn()
 	zombie:Activate()
