@@ -4,8 +4,9 @@ TOOL.Name = "#tool.hcp_zombiecreator.name"
 TOOL.ClientConVar["model"] = ""
 TOOL.ClientConVar["health"] = "100"
 TOOL.ClientConVar["removeheadcrab"] = "0"
-TOOL.ClientConVar["zombietype"] = "0"
+TOOL.ClientConVar["zombietype"] = "1"
 TOOL.ClientConVar["bzero"] = "0"
+TOOL.ClientConVar["sleeping"] = "0"
 TOOL.ClientConVar["override"] = "0"
 
 TOOL.Information = {
@@ -63,6 +64,12 @@ function TOOL:LeftClick(tr)
 		end
 	end
 
+	if self:GetClientNumber("sleeping") == 1 then
+		local ragdoll = HCP.CreateSleepingZombie(zombie:GetClass(), zombie)
+		undo.ReplaceEntity(zombie, ragdoll)
+		zombie:Remove()
+	end
+
 	return true
 end
 
@@ -114,17 +121,21 @@ if CLIENT then
 		combobox.OnSelect = function(panel, index, value, data)
 			RunConsoleCommand("hcp_zombiecreator_zombietype", tostring(data))
 		end
-		combobox:ChooseOptionID(HCP.GetConvarInt("zombiecreator_zombietype"))
+		combobox:ChooseOptionID(math.Clamp(HCP.GetConvarInt("zombiecreator_zombietype"), 1, #ZombieTypes))
 		CPanel:AddPanel(combobox)
 
 		CPanel:TextEntry("Model", "hcp_zombiecreator_model")
 		CPanel:NumSlider("Health", "hcp_zombiecreator_health", 1, 500, 0)
 
-		CPanel:Help("Removes the default Headcrab and restores the models head. Good for models that already have Headcrabs on them.")
 		CPanel:CheckBox("Remove default Headcrab", "hcp_zombiecreator_removeheadcrab")
+		CPanel:ControlHelp("Removes the default Headcrab and restores the models head. Good for models that already have Headcrabs on them.")
 
-		CPanel:Help("Advanced Options")
 		CPanel:CheckBox("Set First Bodygroup to 1", "hcp_zombiecreator_bzero")
-		CPanel:CheckBox("Override Headbone Check", "hcp_zombiecreator_override")
+		CPanel:ControlHelp("Sets the first bodygroup of the bonemerged model to 1")
+
+		CPanel:CheckBox("Spawn Sleeping", "hcp_zombiecreator_sleeping")
+		CPanel:ControlHelp("Creates a ragdoll with default minimum sleeping time")
+
+		CPanel:CheckBox("Ignore Headbone Check", "hcp_zombiecreator_override")
 	end
 end

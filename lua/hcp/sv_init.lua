@@ -67,6 +67,7 @@ function HCP.CheckTakeOver(entity, cosmetic, attacker)
 	if not IsValid(entity) or not (HCP.CheckHeadBone(cosmetic or entity) or HCP.IsHL1(entity or cosmetic)) then return false end
 	if entity:IsPlayer() and HCP.GetConvarBool("takeover_players") then return true end
 	if entity:IsNPC() and HCP.GetConvarBool("takeover_npcs") then return true end
+	if entity:GetClass() == "prop_ragdoll" and HCP.GetConvarBool("takeover_ragdolls") then return true end
 	return false
 end
 
@@ -101,7 +102,7 @@ function HCP.GetZombieClass(headcrab_class, entity)
 			return class == "npc_zombie" and "monster_zombie" or false
 		end
 
-		if class == "npc_zombie" and HCP.GetConvarBool("enable_zombines") and HCP.ZombineModels[entity:GetModel()] then
+		if class == "npc_zombie" and HCP.GetConvarBool("enable_zombines") and HCP.ZombineModels[entity:GetModel()] and util.IsValidModel("models/zombie/zombie_soldier.mdl") then
 			if entity:IsPlayer() and HCP.GetConvarBool("enable_player_zombines") then
 				return "npc_zombine"
 			elseif not entity:IsPlayer() then
@@ -508,7 +509,7 @@ hook.Add("InitPostEntity", "HCP_CompatHooks", function()
 	if hooktable["OnNPCKilled"] and hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"] then
 		local oldbgo = hooktable["OnNPCKilled"]["BGORagdollsConvertNPC"]
 		hook.Add("OnNPCKilled", "BGORagdollsConvertNPC", function(npc, attacker, inflictor)
-			if npc.IsHeadcrabsPlus and IsValid(npc.HCP_boneMerge) then return end
+			if npc.IsHeadcrabsPlus and IsValid(npc.HCP_Bonemerge) then return end
 			return oldbgo(npc, attacker, inflictor)
 		end)
 	end

@@ -36,12 +36,15 @@ HCP.CreateConvar("takeover", "takeover_players", 1, "bool")
 HCP.CreateConvar("takeover", "remove_attacker", 1, "bool")
 HCP.CreateConvar("takeover", "enable_zombines", 0, "bool", nil, function(p)
 	if not IsMounted("episodic") then
-		p:Help("#hcp.help.needs_episodic"):SetTextColor(Color(255, 0, 0))
+		local c = p:ControlHelp("#hcp.help.needs_episodic")
+		c:SetTextColor(Color(255, 0, 0))
+		c:DockMargin(32, 3, 32, 8)
 	end
 end)
 HCP.CreateConvar("takeover", "enable_player_zombines", 1, "bool")
 HCP.CreateConvar("takeover", "enable_bonemerge", 1, "bool")
 HCP.CreateConvar("takeover", "enable_bonemerge_ragdolls", 1, "bool")
+HCP.CreateConvar("takeover", "takeover_ragdolls", 0, "bool")
 
 -- Instant Kill Convars
 HCP.CreateConvar("instantkill", "instantkill_enable", 0, "bool")
@@ -49,7 +52,7 @@ HCP.CreateConvar("instantkill", "instantkill_behind", 0, "bool")
 HCP.CreateConvar("instantkill", "instantkill_chance", 0, "range", {1, 100})
 
 -- Scripted Sequences Convars
-HCP.CreateConvar("scripted", "takeover_animation", 0, "bool", nil, function(p, box) box:SetEnabled(false) end)
+--HCP.CreateConvar("scripted", "takeover_animation", 0, "bool", nil, function(p, box) box:SetEnabled(false) end)
 HCP.CreateConvar("scripted", "enable_burrowing", 0, "bool", nil)
 HCP.CreateConvar("scripted", "burrowin_range", 900, "range", {900, 2000})
 HCP.CreateConvar("scripted", "burrowout_range", 500, "range", {100, 1500})
@@ -60,7 +63,7 @@ HCP.CreateConvar("scripted", "sleeping_time", 10, "range", {5, 90})
 -- Poison Headcrab Convars
 HCP.CreateConvar("poison", "poison_bites", 3, "range", {0, 5})
 HCP.CreateConvar("poison", "poison_healtime", 5, "range", {1, 30})
-HCP.CreateConvar("poison", "poison_return", 3, "bool", nil, function(p, box) box:SetEnabled(false) end)
+--HCP.CreateConvar("poison", "poison_return", 3, "bool", nil, function(p, box) box:SetEnabled(false) end)
 
 -- Other Convars
 HCP.CreateClientConvar("other", "enable_undolist", 1, "bool")
@@ -73,5 +76,7 @@ end)
 
 -- Modifier Convars
 HCP.CreateConvar("modifiers", "modifiers_enable", 1, "bool")
-HCP.CreateConvar("modifiers", "modifiers_override", 1, "bool")
+HCP.CreateConvar("modifiers", "modifiers_override", 1, "bool", nil, function(p)
+	p:ControlHelp("#hcp.help.modifiers_override")
+end)
 

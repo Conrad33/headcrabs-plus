@@ -37,6 +37,7 @@ function HCP.CreateSleepingZombie(zclass, entity, nobonemerge)
 	rag.HCP_ZClass = zclass
 	rag.HCP_YAngle = entity:GetAngles().y
 	rag.HCP_Health = 50
+	rag.IsHeadcrabsPlusRagdoll = true
 
 	if not nobonemerge then
 		HCP.CopyBonemerge(entity, rag)
@@ -95,7 +96,7 @@ end
 
 -- Add the ability to kill sleeping zombies
 hook.Add("EntityTakeDamage", "HCP_DamageRagdolls", function(ent, dmginfo)
-	if ent.HCP_TTT or not ent.HCP_Health or not IsValid(dmginfo:GetAttacker()) or dmginfo:IsDamageType(DMG_CRUSH) then return end
+	if ent.HCP_TTT or not ent.IsHeadcrabsPlusRagdoll or not IsValid(dmginfo:GetAttacker()) or dmginfo:IsDamageType(DMG_CRUSH) then return end
 	ent.HCP_Health = ent.HCP_Health - dmginfo:GetDamage()
 
 	if ent.HCP_Health <= 0 then
@@ -129,7 +130,7 @@ hook.Add("EntityTakeDamage", "HCP_DamageRagdolls", function(ent, dmginfo)
 end)
 
 -- Add trigger to let Headcrabs burrow
-hook.Add("OnEntityCreated", "HCP_HeadcrabTrigger", function(ent)
+hook.Add("OnEntityCreated", "HCP_HeadcrabBurrowTrigger", function(ent)
 	if not HCP.GetConvarBool("enable_burrowing") or not IsValid(ent) or ent:GetClass() ~= "npc_headcrab" then return end
 
 	ent.HCP_InTrigger = HCP.CreateTrigger(math.max(900, HCP.GetConvarInt("burrowin_range"), HCP.GetConvarInt("burrowout_range")), ent)
@@ -140,10 +141,67 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabTrigger", function(ent)
 			self.HCP_Entity:Fire("Unburrow")
 		end
 	end
+	ent.HCP_OutTrigger.Touch = nil
 
 	function ent.HCP_InTrigger:CustomEndTouch(tent)
 		if #table.GetKeys(self.Ents) == 0 then
 			self.HCP_Entity:Fire("BurrowImmediate")
 		end
+	end
+	ent.HCP_InTrigger.Touch = nil
+end)
+
+-- Trigger for latching onto ragdolls
+hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
+	if not HCP.GetConvarBool("takeover_ragdolls") or not IsValid(ent) or (ent:GetClass() ~= "npc_headcrab" and ent:GetClass() ~= "npc_headcrab_fast") then return end
+
+	ent.HCP_RagdollTrigger = HCP.CreateTrigger(500, ent)
+	ent.HCP_RagdollTrigger.Touch = nil
+	function ent.HCP_RagdollTrigger:Think()
+		if not self.Wait then
+			self.Wait = true
+			self:NextThink(CurTime() + 1.5)
+			return true
+		end
+
+		local crab = self.HCP_Entity
+		local targetvalid = not self.ShouldIgnore(crab.HCP_Target)
+		if targetvalid then
+			if crab.HCP_Target:GetPos():DistToSqr(crab:GetPos()) < 30^2 then
+				HCP.HandleTakeover(crab, crab.HCP_Target)
+				crab.HCP_Target:Remove()
+			end
+		elseif not targetvalid then
+			local EnemyDist = IsValid(crab:GetEnemy()) and crab:GetEnemy():GetPos():DistToSqr(crab:GetPos()) or 99999999
+			local LastDist = 999999999
+
+			for v, _ in pairs(self.Ents) do
+				if self.ShouldIgnore(v) or not crab:NavSetGoal(v:GetPos())  then
+					self.Ents[v] = nil
+					continue
+				end
+
+				local dist = v:GetPos():DistToSqr(crab:GetPos())
+				if dist < LastDist and dist < EnemyDist then
+					LastDist = dist
+					crab.HCP_Target = v
+					crab:SetLastPosition(v:GetBonePosition(v:LookupBone("ValveBiped.Bip01_Head1")) or v:GetPos())
+					crab:SetSchedule(SCHED_FORCED_GO)
+
+					self:NextThink(CurTime() + 1)
+					return true
+				end
+			end
+
+			self:NextThink(CurTime() + 5)
+			return true
+		end
+
+		self:NextThink(CurTime() + 1)
+		return true
+	end
+
+	function ent.HCP_RagdollTrigger.ShouldIgnore(fent)
+		if not HCP.CheckTakeOver(fent) or fent:GetClass() ~= "prop_ragdoll" or fent.IsHeadcrabsPlusRagdoll then return true end
 	end
 end)

@@ -47,7 +47,6 @@ local function HCP_Menu(CPanel)
 	-- Scripted Sequences Options
 	local sequences = vgui.Create("DForm", CPanel)
 	sequences:SetName("#hcp.ui.scripted")
-	sequences:Help("Work in Progress"):DockMargin(0, 0, 8, 8)
 	for k, v in pairs(HCP.Convars["scripted"]) do
 		HCP_AddOption(sequences, v)
 	end
@@ -75,7 +74,7 @@ local function HCP_Menu(CPanel)
 	about:SetName("#hcp.about")
 	about:Help("Headcrabs Plus v" .. HCP.Version):DockMargin(0, 0, 8, 8)
 	about:Help("Made by Shakes"):DockMargin(0, 0, 8, 8)
-	about:Button("#hcp.about.workshop").DoClick = function() gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=2463494681") end
+	about:Button("#hcp.about.workshop").DoClick = function() gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=2644919161") end
 	about:Button("#hcp.about.bug_report", "hcp_diagnostic"):SetTextColor(Color(200, 0, 0))
 	about:Help("")
 	CPanel:AddItem(about)
