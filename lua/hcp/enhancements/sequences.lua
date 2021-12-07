@@ -170,6 +170,9 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
 			if crab.HCP_Target:GetPos():DistToSqr(crab:GetPos()) < 30^2 then
 				HCP.HandleTakeover(crab, crab.HCP_Target)
 				crab.HCP_Target:Remove()
+			else
+				crab:SetLastPosition(crab.HCP_Target:GetBonePosition(crab.HCP_Target:LookupBone("ValveBiped.Bip01_Head1")) or crab.HCP_Target:GetPos())
+				crab:SetSchedule(SCHED_FORCED_GO)
 			end
 		elseif not targetvalid then
 			local EnemyDist = IsValid(crab:GetEnemy()) and crab:GetEnemy():GetPos():DistToSqr(crab:GetPos()) or 99999999
