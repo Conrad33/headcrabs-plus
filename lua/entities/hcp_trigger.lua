@@ -13,6 +13,7 @@ end
 function ENT.ShouldIgnore(ent)
 	if not IsValid(ent) then return true end
 	if ent:IsNPC() and not (HCP.Zombies[ent:GetClass()] or HCP.Headcrabs[ent:GetClass()]) then return false end
+	if ent:IsPlayer() then return false end
 	return true
 end
 
@@ -31,7 +32,7 @@ end
 function ENT:StartTouch(ent)
 	if self:CheckValid() or self.ShouldIgnore(ent) then return end
 	self.Ents[ent] = true
-	if GetConVar("ai_disabled"):GetBool() or (ent:IsPlayer() and not GetConVar("ai_ignoreplayers"):GetBool()) then return end
+	if GetConVar("ai_disabled"):GetBool() or (ent:IsPlayer() and GetConVar("ai_ignoreplayers"):GetBool()) then return end
 	if self:GetDisabled() then return end
 	self:CustomStartTouch(ent)
 end
@@ -39,13 +40,13 @@ end
 function ENT:EndTouch(ent)
 	self.Ents[ent] = nil
 	if self:CheckValid() or self:GetDisabled() or self.ShouldIgnore(ent) then return end
-	if GetConVar("ai_disabled"):GetBool() or (ent:IsPlayer() and not GetConVar("ai_ignoreplayers"):GetBool()) then return end
+	if GetConVar("ai_disabled"):GetBool() or (ent:IsPlayer() and GetConVar("ai_ignoreplayers"):GetBool()) then return end
 	self:CustomEndTouch(ent)
 end
 
 function ENT:Touch(ent)
-	if self:CheckValid() or self:GetDisabled() or self.ShouldIgnore(ent) or GetConVar("ai_disabled"):GetBool() then return end
-	if GetConVar("ai_disabled"):GetBool() or (ent:IsPlayer() and not GetConVar("ai_ignoreplayers"):GetBool()) then return end
+	if self:CheckValid() or self:GetDisabled() or self.ShouldIgnore(ent) then return end
+	if GetConVar("ai_disabled"):GetBool() or (ent:IsPlayer() and GetConVar("ai_ignoreplayers"):GetBool()) then return end
 	self:CustomTouch(ent)
 end
 
