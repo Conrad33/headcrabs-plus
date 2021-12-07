@@ -370,7 +370,7 @@ hook.Add("EntityTakeDamage", "HCP_MarkDeath", function(target, dmginfo)
 	end
 
 	-- Stop them from splitting in half from saws / explosions
-	if dmginfo:GetDamage() >= target:GetMaxHealth( ) / 2 and bit.band(dmginfo:GetDamageType(), bit.bor(DMG_BLAST, DMG_CRUSH, DMG_SLASH)) ~= 0 then
+	if dmginfo:GetDamage() >= target:GetMaxHealth() / 2 and bit.band(dmginfo:GetDamageType(), bit.bor(DMG_BLAST, DMG_CRUSH, DMG_SLASH)) ~= 0 then
 		dmginfo:SetDamageType(DMG_GENERIC)
 	end
 

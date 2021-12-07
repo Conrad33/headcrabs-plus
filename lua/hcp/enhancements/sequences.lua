@@ -36,7 +36,7 @@ function HCP.CreateSleepingZombie(zclass, entity, nobonemerge)
 	rag:SetBodygroup(1, 1)
 	rag.HCP_ZClass = zclass
 	rag.HCP_YAngle = entity:GetAngles().y
-	rag.HCP_Health = 50
+	rag.HCP_Health = entity.HCP_Health or 50
 	rag.IsHeadcrabsPlusRagdoll = true
 
 	if not nobonemerge then
