@@ -73,7 +73,7 @@ end
 
 -- Determines if the entity has a valid Head Bone (returns Bool)
 function HCP.CheckHeadBone(entity)
-	return (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()]) ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
+	return (HCP.GetRuleTable(entity)) ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
 end
 
 function HCP.IsHL1(entity)
@@ -88,7 +88,7 @@ function HCP.GetZombieClass(headcrab_class, entity)
 	end
 
 	if IsValid(entity) then
-		local rules = (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()])
+		local rules = HCP.GetRuleTable(entity)
 		if rules then
 			if rules.req_class and rules.req_class ~= class then return false end
 			if rules.class and (HCP.Zombies[rules.class] or scripted_ents.Get(rules.class)) and (class == rules.req_class or class == "npc_zombie") then
@@ -153,7 +153,7 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 		return true
 	end
 
-	local rules = (HCP.Rules[entity:GetModel()] or HCP.Rules[entity:GetClass()])
+	local rules = HCP.GetRuleTable(entity)
 	if rules then
 		if rules.model == false then
 			model = false
@@ -171,7 +171,17 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 
 		if rules then
 			if rules.bg then bonemerge:SetBodyGroups(rules.bg) end
-			if rules.bgz then target:SetBodyGroups(rules.bgz) end
+			if rules.headcrab then
+				local hc = rules.headcrab
+				if zclass == rules.headcrab[1] then
+					bonemerge:SetBodygroup(hc[2], hc[3])
+					bonemerge:SetShouldScale(false)
+					target:SetBodygroup(1, 0)
+					target.HCP_Headcrab = hc
+				else
+					bonemerge:SetBodygroup(hc[2], hc[4])
+				end
+			end
 			if rules.skin then bonemerge:SetSkin(rules.skin) end
 		end
 
@@ -255,10 +265,21 @@ function HCP.CreateDeathRagdoll(entity)
 	end
 
 	-- Don't show the headcrab on the ragdoll if one was dropped
-	if entity.HCP_Death == DEATH_NODROP or HCP.IsHL1(entity) then
-		deathragdoll:SetBodygroup(1,1)
+	local hc = entity.HCP_Headcrab
+	if not hc then
+		if entity.HCP_Death == DEATH_NODROP or HCP.IsHL1(entity) then
+			deathragdoll:SetBodygroup(1,1)
+		else
+			deathragdoll.HCP_Bonemerge:SetShouldScale(false)
+		end
 	else
+		deathragdoll:SetBodygroup(1,0)
 		deathragdoll.HCP_Bonemerge:SetShouldScale(false)
+		if entity.HCP_Death == DEATH_NODROP then
+			deathragdoll.HCP_Bonemerge:SetBodygroup(hc[2], hc[3])
+		else
+			deathragdoll.HCP_Bonemerge:SetBodygroup(hc[2], hc[4])
+		end
 	end
 
 	if entity.HCP_HLCrab then
@@ -489,6 +510,12 @@ hook.Add("EntityTakeDamage", "HCP_InstantKill", function(ent, dmg)
 			dmg:SetDamage(999)
 			attacker.HCP_DMGLock = CurTime() + 0.1
 		end
+	end
+end)
+
+hook.Add("EntityTakeDamage", "HCP_VoidRagdollDamage", function(target, dmg)
+	if HCP.Headcrabs[target:GetClass()] and IsValid(dmg:GetAttacker()) and dmg:GetAttacker():GetClass() == "prop_ragdoll" then
+		return true
 	end
 end)
 

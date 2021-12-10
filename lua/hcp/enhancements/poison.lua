@@ -9,10 +9,8 @@ end
 hook.Add("EntityTakeDamage", "HCP_PoisonBites", function(ent, dmg)
 	local attacker = dmg:GetAttacker()
 
-	print(dmg:IsDamageType(DMG_SLASH), dmg:IsDamageType(DMG_POISON), dmg:GetDamage(), ent:Health())
-
 	if HCP.GetConvarInt("poison_bites") == 0 then return end
-	if not HCP.CheckTakeOver(ent, nil, attacker) or attacker:GetClass() ~= "npc_headcrab_black" and attacker:GetClass() ~= "npc_headcrab_poison"  then return end
+	if not HCP.CheckTakeOver(ent, nil, attacker) or attacker:GetClass() ~= "npc_headcrab_black" and attacker:GetClass() ~= "npc_headcrab_poison" then return end
 
 	if dmg:IsDamageType(DMG_POISON) then
 		local bites = HCP.CalcPoisonBites(ent.HCP_PoisonBites) + 1

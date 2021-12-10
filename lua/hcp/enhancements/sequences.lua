@@ -165,13 +165,13 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
 		end
 
 		local crab = self.HCP_Entity
-		local targetvalid = not self.ShouldIgnore(crab.HCP_Target)
+		local targetvalid = not self.ShouldIgnore(crab.HCP_Target, self.HCP_Entity)
 		if targetvalid then
 			if crab.HCP_Target:GetPos():DistToSqr(crab:GetPos()) < 30^2 then
 				HCP.HandleTakeover(crab, crab.HCP_Target)
 				crab.HCP_Target:Remove()
 			else
-				crab:SetLastPosition(crab.HCP_Target:GetBonePosition(crab.HCP_Target:LookupBone("ValveBiped.Bip01_Head1")) or crab.HCP_Target:GetPos())
+				crab:SetLastPosition(crab.HCP_Target:LookupBone("ValveBiped.Bip01_Head1") and crab.HCP_Target:GetBonePosition(crab.HCP_Target:LookupBone("ValveBiped.Bip01_Head1")) or crab.HCP_Target:GetPos())
 				crab:SetSchedule(SCHED_FORCED_GO)
 			end
 		elseif not targetvalid then
@@ -179,7 +179,7 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
 			local LastDist = 999999999
 
 			for v, _ in pairs(self.Ents) do
-				if self.ShouldIgnore(v) or not crab:NavSetGoal(v:GetPos())  then
+				if self.ShouldIgnore(v, self.HCP_Entity) or not crab:NavSetGoal(v:GetPos())  then
 					self.Ents[v] = nil
 					continue
 				end
@@ -188,7 +188,7 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
 				if dist < LastDist and dist < EnemyDist then
 					LastDist = dist
 					crab.HCP_Target = v
-					crab:SetLastPosition(v:GetBonePosition(v:LookupBone("ValveBiped.Bip01_Head1")) or v:GetPos())
+					crab:SetLastPosition(v:LookupBone("ValveBiped.Bip01_Head1") and v:GetBonePosition(v:LookupBone("ValveBiped.Bip01_Head1")) or v:GetPos())
 					crab:SetSchedule(SCHED_FORCED_GO)
 
 					self:NextThink(CurTime() + 1)
@@ -204,7 +204,10 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
 		return true
 	end
 
-	function ent.HCP_RagdollTrigger.ShouldIgnore(fent)
-		if not HCP.CheckTakeOver(fent) or fent:GetClass() ~= "prop_ragdoll" or fent.IsHeadcrabsPlusRagdoll then return true end
+	function ent.HCP_RagdollTrigger.ShouldIgnore(fent, attacker)
+		if not HCP.CheckTakeOver(fent, nil, attacker) or fent:GetClass() ~= "prop_ragdoll"
+		  or table.HasValue(HCP.ZombieModels, fent:GetModel()) or fent.IsHeadcrabsPlusRagdoll then
+			return true
+		end
 	end
 end)
