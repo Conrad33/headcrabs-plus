@@ -19,12 +19,7 @@ local DefaultFile = [[
 ##      "class": "npc_vj_hlrof_zombie_soldier"
 ##  },
 ##  "models/player/bms_scientist_female.mdl": {
-##      "headcrab": [
-##          "npc_zombie",
-##          1.0,
-##          0.0,
-##          1.0
-##      ],
+##      "headcrab": ["npc_zombie", 1, 0, 1],
 ##      "model": "models/zombies/zombie_sci.mdl"
 ##  },
 ##  "models/hassassin.mdl": {
@@ -41,7 +36,7 @@ local DefaultFile = [[
 local BMS_Headcrab = {"npc_zombie", 1, 0, 1}
 HCP.DefaultRules = {
 	-- HL1
-	["models/scientist.mdl"] = {class = "monster_zombie", model = false},
+	["models/scientist.mdl"] = {req_class = "npc_zombie", class = "monster_zombie", model = false},
 	["models/hassassin.mdl"] = {class = false},
 
 	-- BMS + BMS Playermodels Support
@@ -59,23 +54,23 @@ HCP.DefaultRules = {
 	["models/humans/marine.mdl"] = {model = "models/zombies/zombie_grunt.mdl", headcrab = BMS_Headcrab},
 
 	-- VJ Base HL:R
-	["npc_vj_hlr1_scientist"] = {class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlrbs_rosenberg"] = {class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1_scientist"] = {class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1_scientist"] = {class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1_scientist"] = {class = "npc_vj_hlr1_zombie", model = false},
-	["npc_vj_hlr1a_scientist"] = {class = "npc_vj_hlr1a_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlrbs_rosenberg"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1_zombie", model = false},
+	["npc_vj_hlr1a_scientist"] = {req_class = "npc_zombie", class = "npc_vj_hlr1a_zombie", model = false},
 
 	["npc_vj_hlr1_securityguard"] = {class = "npc_vj_hlrof_zombie_sec", model = false},
-	["npc_vj_hlrof_otis"] = {class = "npc_vj_hlrof_zombie_sec", model = false},
-	["npc_vj_hlr1a_securityguard"] = {class = "npc_vj_hlrof_zombie_sec", model = false},
+	["npc_vj_hlrof_otis"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_sec", model = false},
+	["npc_vj_hlr1a_securityguard"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_sec", model = false},
 
-	["npc_vj_hlrof_hgrunt"] = {class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlr1_hgrunt"] = {class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlrof_hgrunt_eng"] = {class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlrof_hgrunt_med"] = {class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlr1_hgrunt_serg"] = {class = "npc_vj_hlrof_zombie_soldier", model = false},
-	["npc_vj_hlr1a_hgrunt"] = {class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlrof_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlr1_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlrof_hgrunt_eng"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlrof_hgrunt_med"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlr1_hgrunt_serg"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
+	["npc_vj_hlr1a_hgrunt"] = {req_class = "npc_zombie", class = "npc_vj_hlrof_zombie_soldier", model = false},
 
 	["models/vj_hlr/opfor/strooper.mdl"] = {class = false},
 	["models/vj_hlr/opfor/massn.mdl"] = {class = false},

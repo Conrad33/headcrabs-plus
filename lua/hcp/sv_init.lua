@@ -90,7 +90,8 @@ function HCP.GetZombieClass(headcrab_class, entity)
 	if IsValid(entity) then
 		local rules = HCP.GetRuleTable(entity)
 		if rules then
-			if rules.class and (HCP.Zombies[rules.class] or scripted_ents.Get(rules.class)) and (class == (rules.req_class or "npc_zombie")) then
+			if rules.req_class and rules.req_class ~= class then return false end
+			if rules.class and (HCP.Zombies[rules.class] or scripted_ents.Get(rules.class)) and (rules.req_class or class == "npc_zombie") then
 				class = rules.class
 			elseif rules.class == false then
 				return false
