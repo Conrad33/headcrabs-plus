@@ -90,8 +90,7 @@ function HCP.GetZombieClass(headcrab_class, entity)
 	if IsValid(entity) then
 		local rules = HCP.GetRuleTable(entity)
 		if rules then
-			if rules.req_class and rules.req_class ~= class then return false end
-			if rules.class and (HCP.Zombies[rules.class] or scripted_ents.Get(rules.class)) and (class == rules.req_class or class == "npc_zombie") then
+			if rules.class and (HCP.Zombies[rules.class] or scripted_ents.Get(rules.class)) and (class == (rules.req_class or "npc_zombie")) then
 				class = rules.class
 			elseif rules.class == false then
 				return false
@@ -427,7 +426,7 @@ end)
 
 hook.Add("OnNPCKilled", "HCP_NPCDeath", function(npc, inflictor, attacker)
 	-- Handle Death Ragdolls
-	if IsValid(npc.HCP_Bonemerge) and npc:GetClass() ~= "prop_ragdoll" then
+	if IsValid(npc.HCP_Bonemerge) and npc:GetClass(true) ~= "prop_ragdoll" then
 		if not HCP.GetConvarBool("enable_bonemerge_ragdolls") then
 			npc.HCP_Bonemerge:Remove()
 		end
@@ -571,7 +570,6 @@ end
 local diagnostic
 concommand.Add("hcp_diagnostic", function(ply)
 	if IsValid(ply) and not ply:IsAdmin() then return end
-	local report = IsValid(ply) and function(...) ply:ChatPrint(...) print(...) end or print
 
 	if diagnostic then
 		report(diagnostic)

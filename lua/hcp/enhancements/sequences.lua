@@ -24,6 +24,31 @@ function HCP.CreateTrigger(size, entity)
 	return trigger
 end
 
+local entMeta = FindMetaTable("Entity")
+function CreateFakeNPC(ent, class)
+	local tab = {}
+	for k, v in pairs(entMeta) do
+		tab[k] = function(this, ...)
+			if this == tab then this = ent end
+			return v(this, ...)
+		end
+	end
+
+	function tab:GetClass(normal)
+		return not normal and class or entMeta.GetClass(ent)
+	end
+
+	function tab:IsValid()
+		return false
+	end
+
+	function tab:IsNPC()
+		return false
+	end
+
+	return tab
+end
+
 -- Creates a Zombie Ragdoll from an Entity (returns Entity)
 function HCP.CreateSleepingZombie(zclass, entity, nobonemerge)
 	if not HCP.ZombieModels[zclass] then return false end
@@ -96,11 +121,12 @@ end
 
 -- Add the ability to kill sleeping zombies
 hook.Add("EntityTakeDamage", "HCP_DamageRagdolls", function(ent, dmginfo)
-	if ent.HCP_TTT or not ent.IsHeadcrabsPlusRagdoll or not IsValid(dmginfo:GetAttacker()) or dmginfo:IsDamageType(DMG_CRUSH) then return end
+	if ent.HCP_TTT or not ent.IsHeadcrabsPlusRagdoll or not IsValid(dmginfo:GetAttacker()) or dmginfo:IsDamageType(DMG_CRUSH) or not ent.HCP_Health then return end
 	ent.HCP_Health = ent.HCP_Health - dmginfo:GetDamage()
 
 	if ent.HCP_Health <= 0 then
-		hook.Run("OnNPCKilled", ent, dmginfo:GetAttacker(), dmginfo:GetInflictor())
+		fake_ent = CreateFakeNPC(ent, ent.HCP_ZClass)
+		hook.Run("OnNPCKilled", fake_ent, dmginfo:GetAttacker(), dmginfo:GetInflictor())
 
 		if IsValid(ent.HCP_Trigger) then
 			ent.HCP_Trigger:SetDisabled(true)

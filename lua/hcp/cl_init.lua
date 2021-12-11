@@ -67,6 +67,7 @@ local function HCP_Menu(CPanel)
 	for k, v in pairs(HCP.Convars["other"]) do
 		HCP_AddOption(other, v)
 	end
+	other:Button("Reload hcp_rules.json", "hcp_reload_rules")
 	CPanel:AddItem(other)
 
 	-- About
