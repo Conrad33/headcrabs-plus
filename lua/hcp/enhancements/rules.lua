@@ -84,13 +84,18 @@ HCP.DefaultRules = {
 
 function HCP.GetRuleTable(ent)
 	if not IsValid(ent) then return false end
-	local model, class = ent:GetModel(), ent:GetClass()
+	local model, class = ent:GetModel(), ent.HCP_RagClass or ent:GetClass()
 	return (class and HCP.Rules[class]) or (model and HCP.Rules[model]) or false
 end
 
 function HCP.GetRuleTableString(str)
 	return str and HCP.Rules[str] or false
 end
+
+hook.Add("CreateEntityRagdoll", "HCP_RagdollClass", function(ent, rag)
+	if not IsEntity(rag) then return end
+	rag.HCP_RagClass = ent:GetClass()
+end)
 
 function HCP.LoadRules()
 	HCP.Rules = table.Copy(HCP.DefaultRules)

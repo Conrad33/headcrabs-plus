@@ -88,4 +88,3 @@ HCP.CreateConvar("modifiers", "modifiers_enable", 1, "bool")
 HCP.CreateConvar("modifiers", "modifiers_override", 1, "bool", nil, function(p)
 	p:ControlHelp("#hcp.help.modifiers_override")
 end)
-

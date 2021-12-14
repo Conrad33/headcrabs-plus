@@ -19,18 +19,20 @@ function ENT:Draw()
 	self:DrawModel()
 
 	local parent = self:GetParent()
-	if IsValid(parent) and not self:GetLegs() then
-		if parent:GetModel() == "models/zombie.mdl" then
-			parent:SetSubMaterial(10, "models/effects/vol_light001")
-			for i = 12, 18 do
-				parent:SetSubMaterial(i, "models/effects/vol_light001")
+	if IsValid(parent) then
+		if not self:GetLegs() then
+			if parent:GetModel() == "models/zombie.mdl" then
+				parent:SetSubMaterial(10, "models/effects/vol_light001")
+				for i = 12, 18 do
+					parent:SetSubMaterial(i, "models/effects/vol_light001")
+				end
+			else
+				parent:SetSubMaterial(0, "models/effects/vol_light001")
+				parent:SetSkin(100)
 			end
 		else
-			parent:SetSubMaterial(0, "models/effects/vol_light001")
-			parent:SetSkin(100)
+			parent:SetSubMaterial(0, "")
 		end
-	elseif IsValid(parent) then
-		parent:SetSubMaterial(0, "")
 	end
 end
 
@@ -65,8 +67,7 @@ end
 
 
 function ENT:BuildBonePositions(boneCount)
-	if not self:GetShouldScale() or not IsValid(self:GetParent()) then return end
-
+	if not IsValid(self:GetParent()) then return end
 	if self:GetLegs() then
 		self:ResizeParent("ValveBiped.Bip01_L_Thigh")
 		self:ResizeParent("ValveBiped.Bip01_L_Calf")
@@ -76,6 +77,8 @@ function ENT:BuildBonePositions(boneCount)
 		self:ResizeParent("ValveBiped.Bip01_R_Foot")
 		return
 	end
+
+	if not self:GetShouldScale() then return end
 
 	-- HL1 Models
 	self:Resize("Bip01 Head")

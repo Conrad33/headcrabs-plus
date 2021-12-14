@@ -64,10 +64,6 @@ HCP.InstantKill = {
 HCP.Legs = {
 	["models/zombie/classic.mdl"] = "models/zombie/classic_legs.mdl",
 	["models/zombie/zombie_soldier.mdl"] = "models/zombie/zombie_soldier_legs.mdl",
-	["models/zombies/zombie_grunt.mdl"] = "models/gibs/zombies/zombie_grunt/legs.mdl",
-	["models/player/bms_hev.mdl"] = "models/gibs/humans/hev_male/legs.mdl",
-	["models/zombies/zombie_sci.mdl"] = "models/gibs/zombies/zombie_sci/legs.mdl",
-	["models/zombies/zombie_guard.mdl"] = "models/gibs/zombies/zombie_guard/legs.mdl",
 }
 
 -- Determines if a Headcrab can take over an Entity (returns Bool)
@@ -174,7 +170,7 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 
 	if not nobonemerge and model ~= false then
 		if zclass == "npc_fastzombie" and HCP.GetConvarBool("enable_fast_legs") and model and HCP.Legs[model] then
-			local bonemerge = HCP.CreateBonemerge(target, HCP.Legs[model], skin + 1 or entity:GetSkin())
+			local bonemerge = HCP.CreateBonemerge(target, HCP.Legs[model], skin or entity:GetSkin())
 			bonemerge:SetLegs(true)
 			return bonemerge
 		end
@@ -211,7 +207,8 @@ end
 function HCP.CopyBonemerge(bonemerge, target)
 	bonemerge = IsValid(bonemerge.HCP_Bonemerge) and bonemerge.HCP_Bonemerge or bonemerge
 
-	local newmerge = HCP.CreateBonemerge(target, bonemerge:GetModel(), bonemerge:GetSkin())
+	local newmerge = HCP.CreateBonemerge(target, bonemerge:GetModel(), bonemerge:GetSkin(), bonemerge.GetShouldScale and bonemerge:GetShouldScale())
+	newmerge:SetLegs(bonemerge.GetLegs and bonemerge:GetLegs() or false)
 	for k, v in pairs(bonemerge:GetBodyGroups()) do
 		newmerge:SetBodygroup(v.id, bonemerge:GetBodygroup(v.id))
 	end
@@ -231,6 +228,7 @@ function HCP.CreateBonemerge(entity, model, skin, noscaling)
 	bonemerge:SetShouldScale(not noscaling)
 	bonemerge:SetLegs(false)
 	bonemerge:Spawn()
+	bonemerge:SetLightingOriginEntity(entity)
 	entity.HCP_Bonemerge = bonemerge
 	entity:DeleteOnRemove(bonemerge)
 

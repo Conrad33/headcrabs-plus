@@ -3,6 +3,8 @@ HCP.ZombieModels = {
 	["npc_fastzombie"] = "models/zombie/fast.mdl",
 	["npc_poisonzombie"] = "models/zombie/poison.mdl",
 	["npc_zombine"] = "models/zombie/zombie_soldier.mdl",
+	["npc_zombie_torso"] = "models/zombie/classic_torso.mdl",
+	["npc_fastzombie_torso"] = "models/zombie/fast_torso.mdl",
 }
 
 HCP.ZombieHeadcrabModels = {
@@ -230,9 +232,7 @@ hook.Add("OnEntityCreated", "HCP_HeadcrabRagdollTrigger", function(ent)
 	end
 
 	function ent.HCP_RagdollTrigger.ShouldIgnore(fent, attacker)
-		if not HCP.CheckTakeOver(fent, fent and fent.HCP_Bonemerge, attacker) or fent:GetClass() ~= "prop_ragdoll"
-		  or table.HasValue(HCP.ZombieModels, fent:GetModel()) or fent.IsHeadcrabsPlusRagdoll then
-			return true
-		end
+		if not IsValid(fent) or fent:GetClass() ~= "prop_ragdoll" or not HCP.CheckTakeOver(fent, fent.HCP_Bonemerge, attacker) then return true end
+		if table.HasValue(HCP.ZombieModels, fent:GetModel()) or fent.IsHeadcrabsPlusRagdoll then return true end
 	end
 end)
