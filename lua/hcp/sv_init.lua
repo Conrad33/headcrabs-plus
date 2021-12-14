@@ -61,10 +61,19 @@ HCP.InstantKill = {
 	["npc_vj_hlr1_headcrab"] = true,
 }
 
+HCP.Legs = {
+	["models/zombie/classic.mdl"] = "models/zombie/classic_legs.mdl",
+	["models/zombie/zombie_soldier.mdl"] = "models/zombie/zombie_soldier_legs.mdl",
+	["models/zombies/zombie_grunt.mdl"] = "models/gibs/zombies/zombie_grunt/legs.mdl",
+	["models/player/bms_hev.mdl"] = "models/gibs/humans/hev_male/legs.mdl",
+	["models/zombies/zombie_sci.mdl"] = "models/gibs/zombies/zombie_sci/legs.mdl",
+	["models/zombies/zombie_guard.mdl"] = "models/gibs/zombies/zombie_guard/legs.mdl",
+}
+
 -- Determines if a Headcrab can take over an Entity (returns Bool)
 function HCP.CheckTakeOver(entity, cosmetic, attacker)
 	if attacker and (not IsValid(attacker) or not HCP.GetZombieClass(attacker:GetClass(), entity)) then return false end
-	if not IsValid(entity) or not (HCP.CheckHeadBone(cosmetic or entity) or HCP.IsHL1(entity or cosmetic)) then return false end
+	if not IsValid(entity) or not (HCP.CheckHeadBone(cosmetic or entity) or HCP.IsHL1(cosmetic or entity)) then return false end
 	if entity:IsPlayer() and HCP.GetConvarBool("takeover_players") then return true end
 	if entity:IsNPC() and HCP.GetConvarBool("takeover_npcs") then return true end
 	if entity:GetClass() == "prop_ragdoll" and HCP.GetConvarBool("takeover_ragdolls") then return true end
@@ -73,7 +82,7 @@ end
 
 -- Determines if the entity has a valid Head Bone (returns Bool)
 function HCP.CheckHeadBone(entity)
-	return (HCP.GetRuleTable(entity)) ~= nil or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
+	return tobool(HCP.GetRuleTable(entity)) or entity:LookupBone("ValveBiped.Bip01_Head1") ~= nil
 end
 
 function HCP.IsHL1(entity)
@@ -162,7 +171,14 @@ function HCP.SetupBonemerge(zclass, entity, target, nobonemerge)
 		end
 	end
 
+
 	if not nobonemerge and model ~= false then
+		if zclass == "npc_fastzombie" and HCP.GetConvarBool("enable_fast_legs") and model and HCP.Legs[model] then
+			local bonemerge = HCP.CreateBonemerge(target, HCP.Legs[model], skin + 1 or entity:GetSkin())
+			bonemerge:SetLegs(true)
+			return bonemerge
+		end
+
 		local bonemerge = HCP.CreateBonemerge(target, model or entity:GetModel(), skin or entity:GetSkin())
 		if entity.GetPlayerColor and entity:GetPlayerColor() then bonemerge:SetPlayerColor(entity:GetPlayerColor()) end
 		for k, v in pairs(entity:GetBodyGroups()) do
@@ -213,6 +229,7 @@ function HCP.CreateBonemerge(entity, model, skin, noscaling)
 	bonemerge:SetModel(model)
 	bonemerge:SetSkin(skin or 1)
 	bonemerge:SetShouldScale(not noscaling)
+	bonemerge:SetLegs(false)
 	bonemerge:Spawn()
 	entity.HCP_Bonemerge = bonemerge
 	entity:DeleteOnRemove(bonemerge)

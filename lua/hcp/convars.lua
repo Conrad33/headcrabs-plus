@@ -30,9 +30,10 @@ function HCP.GetConvarInt(name)
 	return GetConVar("hcp_" .. name):GetInt()
 end
 
--- Take Over Convars
+-- Takeover Convars
 HCP.CreateConvar("takeover", "takeover_npcs", 1, "bool")
 HCP.CreateConvar("takeover", "takeover_players", 1, "bool")
+HCP.CreateConvar("takeover", "takeover_ragdolls", 0, "bool")
 HCP.CreateConvar("takeover", "remove_attacker", 1, "bool")
 HCP.CreateConvar("takeover", "enable_zombines", 0, "bool", nil, function(p)
 	if not IsMounted("episodic") then
@@ -44,7 +45,6 @@ end)
 HCP.CreateConvar("takeover", "enable_player_zombines", 1, "bool")
 HCP.CreateConvar("takeover", "enable_bonemerge", 1, "bool")
 HCP.CreateConvar("takeover", "enable_bonemerge_ragdolls", 1, "bool")
-HCP.CreateConvar("takeover", "takeover_ragdolls", 0, "bool")
 
 -- Instant Kill Convars
 HCP.CreateConvar("instantkill", "instantkill_enable", 0, "bool")
@@ -70,7 +70,16 @@ HCP.CreateClientConvar("other", "enable_undolist", 1, "bool")
 HCP.CreateConvar("other", "enable_infection", 0, "bool")
 HCP.CreateConvar("other", "enable_sabrean", 1, "bool", nil, function(p)
 	if not HCP.GetSabreanInstalled() then
-		p:Button("#hcp.help.download_sabrean").DoClick = function() gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=206166550") end
+		local c = p:ControlHelp("#hcp.help.needs_sabrean")
+		c:SetTextColor(Color(255, 0, 0))
+		c:DockMargin(32, 3, 32, 8)
+	end
+end)
+HCP.CreateConvar("other", "enable_fast_legs", 0, "bool", nil, function(p)
+	if not HCP.GetSabreanInstalled() then
+		local c = p:ControlHelp("#hcp.help.needs_sabrean")
+		c:SetTextColor(Color(255, 0, 0))
+		c:DockMargin(32, 3, 32, 8)
 	end
 end)
 

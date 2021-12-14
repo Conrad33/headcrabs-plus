@@ -67,7 +67,9 @@ local function HCP_Menu(CPanel)
 	for k, v in pairs(HCP.Convars["other"]) do
 		HCP_AddOption(other, v)
 	end
-	other:Button("Reload hcp_rules.json", "hcp_reload_rules")
+	if not HCP.GetSabreanInstalled() then
+		other:Button("#hcp.help.download_sabrean").DoClick = function() gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=206166550") end
+	end
 	CPanel:AddItem(other)
 
 	-- About
@@ -75,6 +77,7 @@ local function HCP_Menu(CPanel)
 	about:SetName("#hcp.about")
 	about:Help("Headcrabs Plus v" .. HCP.Version):DockMargin(0, 0, 8, 8)
 	about:Help("Made by Shakes"):DockMargin(0, 0, 8, 8)
+	about:Button("Reload hcp_rules.json", "hcp_reload_rules")
 	about:Button("#hcp.about.workshop").DoClick = function() gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=2644919161") end
 	about:Button("#hcp.about.bug_report", "hcp_diagnostic"):SetTextColor(Color(200, 0, 0))
 	about:Help("")

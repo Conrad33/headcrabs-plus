@@ -52,6 +52,7 @@ HCP.DefaultRules = {
 	["models/humans/guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", headcrab = BMS_Headcrab},
 	["models/humans/marine.mdl"] = {model = "models/zombies/zombie_grunt.mdl", headcrab = BMS_Headcrab},
 
+	-- BMS Playermodel Pack V2
 	["models/player/blackmesa_scientific.mdl"] = {model = "models/zombies/zombie_sci.mdl", headcrab = BMS_Headcrab},
 	["models/player/blackmesa_scientific_female.mdl"] = {model = "models/zombies/zombie_sci.mdl", headcrab = BMS_Headcrab},
 	["models/player/blackmesa_guard.mdl"] = {model = "models/zombies/zombie_guard.mdl", headcrab = BMS_Headcrab},
@@ -82,6 +83,7 @@ HCP.DefaultRules = {
 }
 
 function HCP.GetRuleTable(ent)
+	if not IsValid(ent) then return false end
 	local model, class = ent:GetModel(), ent:GetClass()
 	return (class and HCP.Rules[class]) or (model and HCP.Rules[model]) or false
 end
