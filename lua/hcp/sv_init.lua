@@ -207,7 +207,7 @@ end
 function HCP.CopyBonemerge(bonemerge, target)
 	bonemerge = IsValid(bonemerge.HCP_Bonemerge) and bonemerge.HCP_Bonemerge or bonemerge
 
-	local newmerge = HCP.CreateBonemerge(target, bonemerge:GetModel(), bonemerge:GetSkin(), bonemerge.GetShouldScale and bonemerge:GetShouldScale())
+	local newmerge = HCP.CreateBonemerge(target, bonemerge:GetModel(), bonemerge:GetSkin(), bonemerge.GetShouldScale and not bonemerge:GetShouldScale())
 	newmerge:SetLegs(bonemerge.GetLegs and bonemerge:GetLegs() or false)
 	for k, v in pairs(bonemerge:GetBodyGroups()) do
 		newmerge:SetBodygroup(v.id, bonemerge:GetBodygroup(v.id))
